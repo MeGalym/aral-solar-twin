@@ -30,7 +30,7 @@ h2,h3,p,dl{margin:0}
 .clip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 
 /* каркас: сцена на весь экран, поверх — верхняя строка, меню слоёв слева, колонка справа, нижняя строка */
-#ui{position:fixed;inset:0;pointer-events:none;display:grid;gap:var(--gap);padding:14px;
+#ui{position:fixed;inset:0;pointer-events:none;display:grid;gap:var(--gap);padding:16px;
   grid-template-columns:minmax(0,1fr) var(--rw);grid-template-rows:auto minmax(0,1fr) auto;
   grid-template-areas:"top top" "left right" "bot right"}
 #top{grid-area:top;display:flex;gap:10px;align-items:center;min-width:0}
@@ -209,14 +209,34 @@ table.boq{width:100%;border-collapse:collapse;font-size:12px}
 @media (max-width:1280px){.brand span{display:none}}
 @media (max-width:1060px){.tabs button{padding:0 11px}.tabs svg{display:none}.row .t{display:none}.row{grid-template-columns:minmax(0,1fr) auto}#bot{grid-template-columns:minmax(0,250px) minmax(0,1fr)}.ring{grid-template-columns:66px minmax(0,1fr);gap:10px}.ring .c b{font-size:14px}.ring .c small{display:none}.ring .c b{transform:translateY(-50%)}}
 @media (max-width:760px){
-  body{overflow:auto}
-  #scene{position:sticky;top:0;height:52vh}
-  #ui{position:relative;inset:auto;display:flex;flex-direction:column;margin-top:-52vh;padding:10px}
-  #top{flex-wrap:wrap}.brand b{display:none}.brand{padding:0 7px}.search{flex-basis:100%;max-width:none;order:5}
-  #left{min-height:calc(52vh - 130px);justify-content:flex-start}
-  .menu{flex-direction:row;overflow:auto;max-width:100%}
-  #right{overflow:visible}#bot{grid-template-columns:minmax(0,1fr)}
-  #labels{position:absolute;height:52vh}
+  /* телефон: сцена закреплена сверху, под ней листается лента карточек */
+  :root{--sh:50vh;--gx:max(16px,env(safe-area-inset-left,0px));--gy:max(10px,env(safe-area-inset-top,0px))}
+  @supports (height:1svh){:root{--sh:50svh}}
+  html,body{height:auto;min-height:100%}
+  body{overflow-x:hidden;overflow-y:auto}
+  #scene{position:fixed;inset:0 0 auto 0;height:var(--sh)}
+  #labels{position:fixed;inset:0 0 auto 0;height:var(--sh)}
+  #ui{position:relative;inset:auto;display:flex;flex-direction:column;gap:10px;padding:calc(var(--sh) + 10px) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) var(--gx)}
+  #top{position:fixed;z-index:8;top:var(--gy);left:var(--gx);right:max(16px,env(safe-area-inset-right,0px));flex-wrap:wrap;gap:6px}
+  .brand{padding:0 5px;height:40px}.brand>div:last-child{display:none}.brand-mark{width:30px;height:30px}
+  .tabs{height:40px;flex:1 1 220px;min-width:0;padding:3px}
+  .tabs button{flex:1 1 auto;justify-content:center;padding:0 8px;font-size:12.5px}
+  .search{flex:1 1 100px;max-width:none;order:4}.search input{height:40px;padding-left:36px;font-size:16px}.search>svg{top:12px;left:13px}
+  #suggest{top:46px}
+  .clock{order:3;height:40px;margin-left:0;padding:0 5px 0 13px}.clock .num{font-size:14px;padding-right:6px}.clock select{padding:5px 10px;font-size:12.5px}
+  #left{order:1;min-height:0;align-items:stretch;gap:10px}
+  .menu{position:fixed;z-index:7;left:var(--gx);right:max(16px,env(safe-area-inset-right,0px));top:calc(var(--sh) - 52px);flex-direction:row;overflow-x:auto;scrollbar-width:none;border-radius:999px;padding:4px;gap:2px}
+  .menu::-webkit-scrollbar{display:none}
+  .menu button{padding:7px 12px 7px 10px;border-radius:999px;flex:none;font-size:12.5px}
+  #insp,#legend{width:auto;max-height:none}
+  #legend.hint{display:none!important}
+  #bot{order:2;grid-template-columns:minmax(0,1fr)}
+  #time{order:-1}
+  #right{order:3;overflow:visible}
+  .tile .v{font-size:21px}
+  .ring{grid-template-columns:84px minmax(0,1fr);gap:14px}.ring .c b{font-size:17px}
+  .fin input{font-size:16px}
+  #tip{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -406,7 +426,7 @@ sky.material.uniforms.turbidity.value = 4.5; sky.material.uniforms.rayleigh.valu
 scene.add(sky);
 const pmrem = new THREE.PMREMGenerator(renderer), envScene = new THREE.Scene(); let envRT = null, envDirty = true, envTimer = 0;
 const hemi = new THREE.HemisphereLight(0xcfe0ff, 0x8a7a5c, 1); scene.add(hemi);
-const sunL = new THREE.DirectionalLight(0xfff1dc, 3); sunL.castShadow = true; sunL.shadow.mapSize.set(4096,4096);
+const sunL = new THREE.DirectionalLight(0xfff1dc, 3); const PHONE = matchMedia('(max-width:760px)').matches; sunL.castShadow = true; sunL.shadow.mapSize.set(PHONE?2048:4096,PHONE?2048:4096);
 Object.assign(sunL.shadow.camera,{left:-520,right:520,top:520,bottom:-520,near:50,far:2600}); sunL.shadow.bias = -0.0004; sunL.shadow.normalBias = 0.4;
 scene.add(sunL, sunL.target);
 
@@ -874,7 +894,7 @@ function addLabel(id, pos, html, cls, onclick, key){ const d=document.createElem
 SITE.ktp.forEach(k=>addLabel(k.id, new THREE.Vector3(k.x,7,k.z), `<i></i><b>${k.name}</b><span></span>`, '', ()=>select({level:'ktp',k:k.id},true)));
 function alertLabels(){
   Object.keys(labels).filter(k=>k[0]==='a').forEach(k=>{labels[k].el.remove(); delete labels[k];});
-  if(S.stage==='ops'){ evCache.filter(e=>e.sel&&e.sel.level!=='string').slice(0,5).forEach((e,i)=>{const {p}=selCenter(e.sel); p.y=5;
+  if(S.stage==='ops'){ evCache.filter(e=>e.sel&&e.sel.level!=='string').slice(0,PHONE?2:5).forEach((e,i)=>{const {p}=selCenter(e.sel); p.y=5;
       addLabel('a'+i, p, `<i></i><b>${e.sel.level==='inv'?invName(e.sel.ii):tName(e.sel.t)}</b><span>${live.day?'−'+fmt(e.loss)+' кВт':''}</span>`, 'alert', ()=>select(e.sel,true), e.key);});
     SITE.ktp.forEach(k=>labels[k.id].el.querySelector('span').textContent = fmt(ktpAC[k.id]/1000,2)+' МВт'); }
   if(S.stage==='build') bm.missing.slice(0,4).forEach((t,i)=>addLabel('a'+i, new THREE.Vector3(tX[t],5,tZ[t]), `<i></i><b>${tName(t)}</b><span>−${81-EPC.missed[t]} мод.</span>`, 'alert', ()=>select({level:'tracker',t},true), 'tracker:'+t));
@@ -883,7 +903,7 @@ function alertLabels(){
 }
 const INS = {l:0,r:0,t:0,b:0,block:[]};
 function insets(){ const w = canvas.clientWidth, h = canvas.clientHeight;
-  if(innerWidth<=760){INS.l=INS.r=INS.t=INS.b=0; INS.block=[]; camera.clearViewOffset(); return;}
+  if(innerWidth<=760){INS.l=-30; INS.r=-30; INS.t=$('#top').getBoundingClientRect().bottom-10; INS.b=$('#modes').offsetHeight?58:8; INS.block=[]; const cy=(INS.t+h-INS.b)/2; camera.setViewOffset(w,h,0,Math.round(h/2-cy),w,h); return;}
   INS.r = w-$('#right').getBoundingClientRect().left+4; INS.b = h-$('#bot').getBoundingClientRect().top+4; INS.t = $('#top').getBoundingClientRect().bottom+4; INS.l = 8;
   INS.block = ['#modes','#legend','#insp'].map(q=>$(q).getBoundingClientRect()).filter(r=>r.width>0);
   const cx = (INS.l+w-INS.r)/2, cy = (INS.t+h-INS.b)/2; camera.setViewOffset(w,h,Math.round(w/2-cx),Math.round(h/2-cy),w,h); }
@@ -898,8 +918,9 @@ function renderLegend(){
     if(L) h = `<h2>${L[0]}</h2><div class="ramp" style="background:${css(L[1])}"></div><div class="ticks">${L[2].map(t=>`<span>${t}</span>`).join('')}</div>`;
     else if(S.mode==='elec') h = `<h2>Какой инвертор питает панель</h2><p class="empty" style="margin-top:8px">Цвет — инвертор, оттенок — подстанция. Жёлтые линии — кабели 0,8 кВ, голубые — фидеры 35 кВ к ЗРУ.</p>`; }
   if(S.stage==='build') h = S.bmode==='stat' ? `<h2>Что уже сделано на столе</h2>`+key(STAGE_COL.map((c,i)=>[c,STAGE_NAME[i]]).slice(1)) : S.bmode==='pf' ? `<h2>Отставание от плана</h2>`+key([[0x62d6a0,'в срок'],[0xf5b544,'до недели'],[0xf0784a,'до трёх недель'],[0xe5352f,'больше или пропуски']]) : `<h2>Открытые замечания ОТК</h2>`+key([[0xf5b544,'есть замечание'],[0xe5352f,'критичное']]);
-  if(!h&&!S.sel&&S.stage!=='cost') h = `<p class="empty" style="font-size:12px">${S.stage==='ops'?'Нажмите на стол в сцене, чтобы открыть его данные. Слои слева красят каждую панель.':'Нажмите на стол, чтобы увидеть его шаги с плановыми и фактическими датами.'}</p>`;
-  el.innerHTML = h; el.style.display = h?'':'none';
+  const isHint = !h&&!S.sel&&S.stage!=='cost';
+  if(isHint) h = `<p class="empty" style="font-size:12px">${S.stage==='ops'?'Нажмите на стол в сцене, чтобы открыть его данные. Слои слева красят каждую панель.':'Нажмите на стол, чтобы увидеть его шаги с плановыми и фактическими датами.'}</p>`;
+  el.classList.toggle('hint', isHint); el.innerHTML = h; el.style.display = h?'':'none';
 }
 
 /* ═════════ время, поиск, указатель ═════════ */
@@ -952,7 +973,7 @@ function doHover(){
 addEventListener('keydown', e=>{ if(e.key==='Escape'&&document.activeElement!==q) select(null); });
 
 /* ═════════ цикл ═════════ */
-function resize(){const w=canvas.clientWidth, h=canvas.clientHeight, pr=renderer.getPixelRatio(); if(canvas.width!==Math.floor(w*pr)||canvas.height!==Math.floor(h*pr)){renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); insets();}}
+function resize(){const w=canvas.clientWidth, h=canvas.clientHeight, pr=renderer.getPixelRatio(); if(canvas.width!==Math.floor(w*pr)||canvas.height!==Math.floor(h*pr)){renderer.setSize(w,h,false); camera.aspect=w/h; camera.fov = w/h<1.15?50:36; camera.updateProjectionMatrix(); insets();}}
 const ease = t => t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 let last = performance.now(), acc = 0, flow = 0;
 function frame(now){
