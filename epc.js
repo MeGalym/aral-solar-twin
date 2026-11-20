@@ -181,6 +181,6 @@
       missing: d < PUNCH ? Object.keys(missed).filter(t => d >= fact.mods.e[t] + 5).map(Number) : [] };
   }
 
-  window.EPC = { factOver, SMETA, COST_DEFAULTS, FIN_DEFAULTS, capex, finance, boq, ACT, PD, MAXD, DAY0, dateOf, curvePlan, curveFact, cashPlan, factEnd, trackerState, steps, metrics, qc, missed, delivered, plan, fact,
+  window.EPC = { factOver, deliveries, SMETA, COST_DEFAULTS, FIN_DEFAULTS, capex, finance, boq, ACT, PD, MAXD, DAY0, dateOf, curvePlan, curveFact, cashPlan, factEnd, trackerState, steps, metrics, qc, missed, delivered, plan, fact,
     pvsyst: { e50: 52135.6, e90: 50930.4, ghi: 1380.0, poa: 1811.6, pr: 95.89, tamb: 9.46 } };
 })();

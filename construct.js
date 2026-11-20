@@ -134,6 +134,7 @@
       if (!photo) L.marker(ll(k.x - FENX + (k.x < 0 ? -95 : 95), k.z - FENZ - 70), { opacity: 0, interactive: false }).bindTooltip(`Блок ${k.name} · ${fmt(o.fact)} %`, { permanent: true, direction: 'center', className: 'arealbl' }).addTo(g); });
     if (Ly.qc && g === grp) qcOpen(d).forEach(q => L.circleMarker(ll(TX[q.t], TZ[q.t]), { radius: 6, color: '#fff', weight: 2, fillColor: q.status === 'fixed' ? '#1E9E5A' : q.sev === 'bad' ? '#D23B2F' : '#F0784A', fillOpacity: 1 }).bindTooltip(`${tName(q.t)}: ${q.text}`, { className: 'lbl' }).on('click', ev => { L.DomEvent.stop(ev); st.sel = { t: q.t }; refresh(); }).addTo(g));
     if (Ly.eq && g === grp) fleet(d).forEach(f => L.circleMarker(ll(f.pos[0], f.pos[1]), { radius: 7, color: '#16233B', weight: 2, fillColor: f.work ? '#F2B705' : '#fff', fillOpacity: 1 }).bindTooltip(`${f.name}: ${f.work ? 'в работе' : 'простаивает'}, загрузка ${f.util} %`, { className: 'lbl' }).addTo(g));
+    if (g === grp && st.hl && st.hl.length) L.polygon(st.hl.map(t => rectLL(TX[t], TZ[t], W + 3, LEN + 2)), { color: '#ff4fe0', weight: 2, fillColor: '#ff4fe0', fillOpacity: 0.18, interactive: false }).addTo(g);
     if (g === grp && st.sel && st.sel.t != null) L.polygon(rectLL(TX[st.sel.t], TZ[st.sel.t], W + 5, LEN + 4), { color: '#16233B', weight: 2.5, fill: false, interactive: false }).addTo(g);
     if (g === grp) EPC.metrics(d).missing.forEach(t => L.circleMarker(ll(TX[t], TZ[t] - LEN / 2 + 8), { radius: 8, color: '#D23B2F', weight: 2.5, fillColor: '#fff', fillOpacity: 0.9 }).bindTooltip(`Отклонение от проекта: на ${tName(t)} не хватает ${81 - EPC.missed[t]} модулей`, { className: 'lbl' }).on('click', ev => { L.DomEvent.stop(ev); st.sel = { t }; refresh(); }).addTo(g));
   }
@@ -365,7 +366,8 @@
       <label class="f" style="min-width:150px">Было, облёт<select id="aer-b">${fl(A.before)}</select></label><label class="f" style="min-width:150px">Стало, облёт<select id="aer-a">${fl(A.after)}</select></label>
       <div class="acts"><button class="btn sm" data-aer="35:84">Начало монтажа</button><button class="btn sm" data-aer="84:91">Буря</button><button class="btn sm" data-aer="112:133">Срыв поставки</button><button class="btn sm" data-aer="133:210">Наверстали</button><button class="btn sm ${A.status ? 'on' : ''}" data-act="aer-status">Статус поверх</button></div>`;
   }
-  const NAV = { sum: { t: 'Сводка', fn: vSum }, map: { t: 'Карта', fn: vMap }, aer: { t: 'Аэросъёмка', fn: vAerial }, sched: { t: 'График', fn: vRep, subs: ['gantt', 'curve', 'pace', 'look'] }, evm: { t: 'Освоение и деньги', fn: vEvm }, supply: { t: 'Поставки', fn: vSupply }, qc: { t: 'Качество', fn: vRec, subs: ['qc', 'insp'] }, res: { t: 'Ресурсы', fn: vRec, subs: ['man', 'eq'] }, risk: { t: 'Риски и события', fn: vRisk }, rep: { t: 'Отчёты', fn: vRep, subs: ['daily', 'energy'] }, log: { t: 'Портфель и журнал', fn: vRec, subs: ['port', 'log'] }, int: { t: 'Обмен данными', fn: () => SCHED.view({ st, P, head, esc, fmt, kpi, toast, save, span, prog, overall, qcList }) } };
+  const cx = () => ({ st, P, head, esc, fmt, kpi, toast, fday, fdate, prog, tName, render, addQc(t, type, text) { const n = 100 + DB.qc.user.length + 1, rec = { id: 'u' + n, n, t, type, text, sev: 'warn', found: st.day, due: st.day + 14, status: 'assigned', who: CREWS[0], closed: 9999 }; DB.qc.user.push(rec); DB.qc.log.unshift({ t: S.now(), text: `Создано замечание ${n} · ${tName(t)}: ${text}. Назначено: ${rec.who}` }); S.persist(); } });
+  const NAV = { sum: { t: 'Сводка', fn: vSum }, map: { t: 'Карта', fn: vMap }, aer: { t: 'Аэросъёмка', fn: vAerial }, sched: { t: 'График', fn: vRep, subs: ['gantt', 'curve', 'pace', 'look'] }, evm: { t: 'Освоение и деньги', fn: vEvm }, supply: { t: 'Поставки', fn: vSupply }, qc: { t: 'Качество', fn: vRec, subs: ['qc', 'insp'] }, res: { t: 'Ресурсы', fn: vRec, subs: ['man', 'eq'] }, risk: { t: 'Риски и события', fn: vRisk }, rep: { t: 'Отчёты', fn: vRep, subs: ['daily', 'energy'] }, log: { t: 'Портфель и журнал', fn: vRec, subs: ['port', 'log'] }, mat: { t: 'Партии модулей', fn: () => CTRL.view('mat', cx()) }, chk: { t: 'Чек-листы', fn: () => CTRL.view('chk', cx()) }, chg: { t: 'Изменения и претензии', fn: () => CTRL.view('chg', cx()) }, int: { t: 'Обмен данными', fn: () => SCHED.view({ st, P, head, esc, fmt, kpi, toast, save, span, prog, overall, qcList }) } };
 
   /* ───────── события ───────── */
   document.addEventListener('click', ev => {
@@ -385,7 +387,7 @@
     if (a === 'play') playToggle(); else if (a === 'today') { st.day = EPC.factEnd; refresh(); }
     else if (a === 'compare') { st.compare = !st.compare; st.dayB = Math.max(0, st.day - 42); render(); }
     else if (a === 'agent') { st.agent = !st.agent; render(); }
-    else if (a === 'unsel') { st.sel = null; refresh(); }
+    else if (a === 'unsel') { st.sel = null; st.hl = null; refresh(); }
     else if (a === 'aer-status') { st.aer.status = !st.aer.status; aerRefresh(); }
     else if (a === 'photo') { st.mode = st.mode === 'photo' ? 'stage' : 'photo'; if (st.mode !== 'photo') st.status = false; bot(); refresh(); }
     else if (a === 'status') { st.status = !st.status; if (st.status) st.mode = 'photo'; bot(); refresh(); }
