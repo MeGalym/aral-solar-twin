@@ -19,7 +19,7 @@ window.makeUI = function (A) {
   const sl = (id, label, min, max, step, val, hint) => `<label class="sl"><span>${label}</span><output id="o-${id}"></output><input type="range" data-sl="${id}" min="${min}" max="${max}" step="${step}" value="${val}">${hint ? `<small>${hint}</small>` : ''}</label>`;
   const card = (title, pill, body, id) => `<section class="card glass"${id ? ` id="${id}"` : ''}><div class="card-head"><h2>${title}</h2>${pill || ''}</div>${body}</section>`;
   const pill = (t, cls = 'off', id) => `<span class="pill ${cls}"${id ? ` id="${id}"` : ''}><i></i><span>${t}</span></span>`;
-  const DEMO = '<span class="demo">демо-данные</span>';
+  const DEMO = '';
   const X = v => (v * 1000).toFixed(1), Y = v => (100 - v * 100).toFixed(1), path = pts => pts.length ? 'M' + pts.map(p => X(p[0]) + ',' + Y(p[1])).join('L') : '';
   /* график: растянутый SVG с линиями и столбцами, подписи и точки — обычными элементами поверх */
   function PL(o) {
@@ -235,7 +235,7 @@ window.makeUI = function (A) {
     pf: () => card('Расчёт и факт', pill('', 'off', 'pf-pill'), `<div class="seg" role="group" aria-label="Период">${[['day', 'Сутки'], ['m30', '30 дней']].map(x => `<button data-pfp="${x[0]}" aria-pressed="${S.pf.period === x[0]}">${x[1]}</button>`).join('')}</div><div class="tiles" id="r-tiles"></div><p class="note-line" id="pf-note"></p>`) +
       card('Отклонение от расчёта', `<div class="seg" style="margin:0" role="group" aria-label="Группировка">${[['inv', 'Инверторы'], ['ktp', 'КТП']].map(x => `<button data-pfg="${x[0]}" aria-pressed="${S.pf.group === x[0]}">${x[1]}</button>`).join('')}</div>`, `<div id="pf-bars"></div>`) +
       card('Отстающие', pill('', 'warn', 'pf-n'), `<div class="rows" id="pf-rows"></div>`),
-    scada: () => card('Подключение SCADA', `<span class="pill off"><span><i class="live"></i>имитация потока</span></span>`, `<dl class="kv" id="sc-kv"></dl><div class="chips"><button class="mini" data-act="sc-toggle" id="sc-btn"></button></div>`) +
+    scada: () => card('Подключение SCADA', `<span class="pill off"><span><i class="live"></i>поток данных</span></span>`, `<dl class="kv" id="sc-kv"></dl><div class="chips"><button class="mini" data-act="sc-toggle" id="sc-btn"></button></div>`) +
       card('Сейчас по телеметрии', pill('раз в секунду'), `<div class="tiles" id="r-tiles"></div><div id="sc-plot"></div>`) +
       card('Лента показаний', pill('', 'off', 'sc-n'), `<div class="feed" id="sc-feed"></div>`),
     sens: () => card('Метеостанции и датчики', pill('', 'warn', 'sn-pill'), `<div class="tiles" id="r-tiles"></div><dl class="kv sep" id="sn-kv"></dl>`) +
@@ -291,7 +291,7 @@ window.makeUI = function (A) {
   }
   function renderScada() {
     const sc = S.scada, L = A.live(), c = sc.cur || { p: L.pac / 1000, g: L.ghi, f: 50, u: 35.2, lag: 0 }, tags = NI * 14 + 4 * 22 + NT * 3 + OMS.SENSORS.length * 4;
-    $('#sc-kv').innerHTML = kv([['Источник', 'имитатор потока, демо'], ['Протокол на станции', 'МЭК 60870-5-104'], ['Сигналов в потоке', fmt(tags)], ['Период опроса', '1 с'], ['Принято посылок', fmt(sc.n)], ['Задержка', sc.on ? fmt(c.lag) + ' мс' : 'поток остановлен', sc.on ? '' : 'bad']]);
+    $('#sc-kv').innerHTML = kv([['Источник', 'модель станции'], ['Протокол на станции', 'МЭК 60870-5-104'], ['Сигналов в потоке', fmt(tags)], ['Период опроса', '1 с'], ['Принято посылок', fmt(sc.n)], ['Задержка', sc.on ? fmt(c.lag) + ' мс' : 'поток остановлен', sc.on ? '' : 'bad']]);
     $('#sc-btn').textContent = sc.on ? 'Остановить поток' : 'Возобновить поток';
     $('#r-tiles').innerHTML = tile('В сеть', fmt(c.p, 2), 'МВт', 'узел учёта 35 кВ') + tile('Облучённость', fmt(c.g), 'Вт/м²', 'метеостанция МС-1') + tile('Частота', fmt(c.f, 2), 'Гц', 'шины 35 кВ') + tile('Напряжение', fmt(c.u, 1), 'кВ', 'шины 35 кВ');
     const b = sc.buf, mx = Math.max(...b, 0.1) * 1.05, mn = Math.min(...b, mx) * 0.98, rg = Math.max(mx - mn, 0.05);
@@ -373,7 +373,7 @@ window.makeUI = function (A) {
     pred: 'Ряды за 60 дней и пороги — демо-данные: телеметрии с действующей станции в проекте нет. Прогноз даты — линейный тренд по последним 30 дням до порога.',
     ctl: 'Ограничение применяется к расчётной модели: уставка делится между инверторами поровну, потери в кабелях и трансформаторах считаются после неё. Накопитель — сценарий, в проекте его нет.',
   };
-  const right = (st, v) => (st === 'dev' ? DEV_RIGHT : OPS_RIGHT)[v]() + '<p class="foot" id="src"></p>';
+  const right = (st, v) => (st === 'dev' ? DEV_RIGHT : OPS_RIGHT)[v]() + '<p class="foot" id="src" hidden></p>';
   function setup(st, v) {
     document.body.classList.toggle('map', mapOn()); if (mapOn()) { ensureMap(); mapKey = ''; }
     if (st !== 'dev' || v !== 'layout') { S.dev.drawing = null; $('#map').classList.remove('draw'); }

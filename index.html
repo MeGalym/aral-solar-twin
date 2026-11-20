@@ -364,12 +364,12 @@ table.cmp{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
 <script src="epc.js?v=4"></script>
 <script src="pv.js?v=3"></script>
 <script src="wx-aral.js?v=1"></script>
-<script src="engine.js?v=5"></script>
+<script src="engine.js?v=6"></script>
 <script src="store.js?v=5"></script>
 <script src="dev.js?v=3"></script>
 <script src="oms.js?v=3"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="ui.js?v=3"></script>
+<script src="ui.js?v=4"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
 </script>
@@ -848,16 +848,16 @@ const RIGHT = {
   ops:`<section class="card glass"><div class="card-head"><h2>Станция сейчас</h2><span class="pill" id="st-pill"><i></i><span>В работе</span></span></div><div class="tiles" id="r-tiles"></div>
       <dl class="kv sep"><dt>Солнце над горизонтом</dt><dd id="f-sun"></dd><dt>Наклон столов</dt><dd id="f-ang"></dd><dt>Воздух и модуль</dt><dd id="f-t"></dd></dl></section>
     <section class="card glass"><div class="card-head"><h2>Подстанции</h2><span class="pill off"><span>82 инвертора</span></span></div><div class="rows" id="ktp-rows"></div></section>
-    <section class="card glass"><div class="card-head"><h2>Что теряет мощность</h2><span class="pill warn" id="ev-pill"><i></i><span>0</span></span></div><div class="rows" id="ev-rows"></div></section><p class="foot" id="src"></p>`,
+    <section class="card glass"><div class="card-head"><h2>Что теряет мощность</h2><span class="pill warn" id="ev-pill"><i></i><span>0</span></span></div><div class="rows" id="ev-rows"></div></section><p class="foot" id="src" hidden></p>`,
   build:`<section class="card glass"><div class="card-head"><h2>Стройка на дату</h2><span class="pill off"><span>план 8 мес.</span></span></div><div class="tiles" id="r-tiles"></div></section>
     <section class="card glass"><div class="card-head"><h2>Требует решения</h2><span class="pill" id="b-pill"><i></i><span>0</span></span></div><div class="rows" id="b-alerts"></div></section>
     <section class="card glass"><div class="card-head"><h2>Объёмы работ</h2><span class="pill off"><span>метка — план</span></span></div><div class="rows" id="b-acts"></div></section>
-    <section class="card glass"><div class="card-head"><h2>Замечания ОТК</h2><span class="pill warn" id="b-qcpill"><i></i><span>0</span></span></div><div class="rows" id="b-qc"></div></section><p class="foot" id="src"></p>`,
+    <section class="card glass"><div class="card-head"><h2>Замечания ОТК</h2><span class="pill warn" id="b-qcpill"><i></i><span>0</span></span></div><div class="rows" id="b-qc"></div></section><p class="foot" id="src" hidden></p>`,
   cost:`<section class="card glass"><div class="card-head"><h2>Стоимость и экономика</h2><span class="pill off"><span>30,02 МВт</span></span></div><div class="tiles" id="r-tiles"></div></section>
     <section class="card glass"><div class="card-head"><h2>Допущения</h2><button class="mini" id="fin-reset">Сбросить</button></div><div class="fin" id="c-fin"></div></section>
     <section class="card glass"><div class="card-head"><h2>Потери по цепочке PVsyst</h2><span class="pill off"><span>модель / отчёт</span></span></div><table class="boq" id="c-loss"><tbody></tbody></table></section>
     <section class="card glass"><div class="card-head"><h2>Из чего складывается</h2><span class="pill off"><span>млрд ₸</span></span></div><dl class="wf" id="c-wf"></dl></section>
-    <section class="card glass"><div class="card-head"><h2>Ведомость объёмов</h2></div><table class="boq"><tbody>${EPC.boq().map(r=>`<tr><td>${r[0]}<small>${r[3]}</small></td><td>${typeof r[1]==='number'?fmt(r[1],r[1]%1?1:0):r[1]} ${r[2]}</td></tr>`).join('')}</tbody></table></section><p class="foot" id="src"></p>`
+    <section class="card glass"><div class="card-head"><h2>Ведомость объёмов</h2></div><table class="boq"><tbody>${EPC.boq().map(r=>`<tr><td>${r[0]}<small>${r[3]}</small></td><td>${typeof r[1]==='number'?fmt(r[1],r[1]%1?1:0):r[1]} ${r[2]}</td></tr>`).join('')}</tbody></table></section><p class="foot" id="src" hidden></p>`
 };
 const MODES = {ops:[['real','Вид'],['power','Мощность'],['loss','Отклонения'],['temp','Температура'],['elec','Схема']], build:[['stat','Ход работ'],['pf','План и факт'],['qc','Замечания']], cost:[], dev:[['map','Карта'],['3d','3D-модель']]};
 const VIEWS = {ops:[[-300,120,330],[-70,0,40]], build:[[-560,430,720],[0,0,10]], cost:[[-40,860,660],[0,0,30]], dev:[[-60,1150,700],[-20,0,40]]};
