@@ -187,3 +187,6 @@ table.t{width:100%;border-collapse:collapse;font-size:12.5px}
 .split{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:3px;background:#f2f4f8}
 .split>div{position:relative;min-width:0}.split .cap2{position:absolute;left:10px;top:10px;z-index:700;background:rgba(22,35,59,.92);color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:500}
 @media (max-width:860px){.cwrap{position:static;display:flex;flex-direction:column}.cmap{position:relative;height:60vh;flex:none}.over{position:static;width:auto;max-height:none;margin-top:10px;box-shadow:none;flex:none;overflow:visible}.o-bot{grid-template-columns:auto minmax(0,1fr);order:-1}.o-bot .acts{grid-column:1/-1}.o-bot input[type=range]{grid-column:1/-1}.agent{position:static;width:auto;max-height:none;margin-top:10px;flex:none}.card{overflow-x:auto}.cmap{order:-2}}
+
+.cvpop .leaflet-popup-content-wrapper,.cvpop .leaflet-popup-tip{background:rgba(20,26,39,.96);color:var(--text);border:1px solid var(--line)}.cvpop .leaflet-popup-content{font:12.5px/1.5 var(--body);margin:10px 14px}
+@media (max-width:860px){.cv-grid{grid-template-columns:minmax(0,1fr)!important}}

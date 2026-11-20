@@ -28,10 +28,11 @@
 
   /* ───────── изменения и претензии ───────── */
   const CT = { claim: 'Претензия подрядчика', change: 'Изменение объёма', hold: 'Удержание заказчика' }, CS = { open: ['На рассмотрении', 'warn'], ok: ['Согласовано', 'ok'], no: ['Отклонено', 'bad'] };
-  function seed() { if (D.claims) return; const st = EPC.ACT.find(a => a.id === 'mods').stop, miss = Object.keys(EPC.missed).length, mm = Object.values(EPC.missed).reduce((s, v) => s + (81 - v), 0);
+  function seed() { if (D.claims && !D.claims.some(c => c.key === 'storm') && window.CIVIL) { D.claims.push({ id: Math.max(0, ...D.claims.map(z => z.id)) + 1, key: 'storm', type: 'claim', day: CIVIL.STORM + 6, from: CIVIL.STORM - 5, to: CIVIL.STORM + 2, text: `Восстановление планировки после ливня: размыв и вынос грунта ${Math.round(CIVIL.stormVolume() / 10) * 10} м³`, amt: +(CIVIL.stormVolume() * 0.0042).toFixed(1), agreed: null, status: 'open' }); persist(); }
+    if (D.claims) return; const st = EPC.ACT.find(a => a.id === 'mods').stop, miss = Object.keys(EPC.missed).length, mm = Object.values(EPC.missed).reduce((s, v) => s + (81 - v), 0);
     D.claims = [{ id: 1, type: 'claim', day: st[0][1] + 2, from: st[0][0], to: st[0][1], text: 'Простой бригад и техники из-за пыльной бури: монтаж трекеров и модулей остановлен', amt: +((st[0][1] - st[0][0]) * 5.2).toFixed(1), agreed: null, status: 'open' },
       { id: 2, type: 'claim', day: st[1][1] + 3, from: st[1][0], to: st[1][1], text: 'Простой из-за перерыва в поставках модулей: склад опустел, бригады без фронта работ', amt: +((st[1][1] - st[1][0]) * 5.2).toFixed(1), agreed: null, status: 'open' },
-      { id: 3, type: 'hold', day: 175, from: 150, to: 214, text: `Блоки сданы с пропусками: на ${miss} столах не хватает ${mm} модулей. Удержание до устранения`, amt: +(mm * 0.062).toFixed(1), agreed: null, status: 'open' }]; persist(); }
+      { id: 3, type: 'hold', day: 175, from: 150, to: 214, text: `Блоки сданы с пропусками: на ${miss} столах не хватает ${mm} модулей. Удержание до устранения`, amt: +(mm * 0.062).toFixed(1), agreed: null, status: 'open' }]; persist(); seed(); }
   function vChg(ctx) {
     seed(); const { st, esc, fmt, kpi, fday } = ctx, d = st.day, list = D.claims.filter(c => c.day <= d).sort((a, b) => b.day - a.day), sum = f => list.filter(f).reduce((s, c) => s + (c.status === 'ok' ? (c.agreed ?? c.amt) : c.amt), 0);
     const claimed = list.reduce((s, c) => s + c.amt, 0), agreed = list.filter(c => c.status === 'ok').reduce((s, c) => s + (c.agreed ?? c.amt), 0), saved = list.filter(c => c.status !== 'open').reduce((s, c) => s + c.amt - (c.status === 'ok' ? (c.agreed ?? c.amt) : 0), 0);
