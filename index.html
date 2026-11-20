@@ -11,23 +11,23 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <style>
 :root{
-  --glass: rgba(255,255,255,.9); --glass-strong: rgba(255,255,255,.98);
-  --tile: rgba(19,41,75,.05); --tile-hover: rgba(19,41,75,.09);
-  --line: rgba(19,41,75,.12); --text: #16233B; --muted: #56637A; --faint: #8792A4;
-  --amber: #F2B705; --ok: #1E9E5A; --warn: #B26A00; --bad: #D23B2F; --blue: #0B6FC1;
+  --glass: rgba(18,24,38,.66); --glass-strong: rgba(14,19,31,.92);
+  --tile: rgba(255,255,255,.055); --tile-hover: rgba(255,255,255,.1);
+  --line: rgba(255,255,255,.09); --text: #f2f4f8; --muted: #a0a9bb; --faint: #717a8d;
+  --amber: #f5b544; --ok: #62d6a0; --warn: #f5b544; --bad: #ff6452;
   --r-lg: 20px; --r-md: 13px; --r-sm: 9px; --gap: 12px; --rw: clamp(252px, 27vw, 348px);
   --display: "Geologica","Golos Text",system-ui,sans-serif; --body: "Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{background:#EEF2F7;color:var(--text);font:13px/1.4 var(--body);overflow:hidden;-webkit-font-smoothing:antialiased}
+body{background:#0a0e16;color:var(--text);font:13px/1.4 var(--body);overflow:hidden;-webkit-font-smoothing:antialiased}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0;text-align:inherit}
 :focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 h2,h3,p,dl{margin:0}
 [hidden]{display:none!important}
 #scene{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
-.glass{background:var(--glass);backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:0 10px 30px rgba(19,41,75,.13)}
+.glass{background:var(--glass);backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:0 18px 44px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05)}
 .num{font-family:var(--display);font-variant-numeric:tabular-nums}
 .clip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 
@@ -53,8 +53,8 @@ h2,h3,p,dl{margin:0}
 .tabs button{display:flex;align-items:center;gap:8px;padding:0 14px;border-radius:999px;color:var(--muted);font-weight:500;white-space:nowrap}
 .tabs a{display:flex;align-items:center;gap:8px;padding:0 14px;border-radius:999px;color:var(--muted);font-weight:500;white-space:nowrap;text-decoration:none}
 .tabs button:hover,.tabs a:hover{color:var(--text)}
-.tabs a.on{background:var(--text);color:#fff}
-.tabs button[aria-pressed="true"]{background:var(--text);color:#fff}
+.tabs a.on{background:var(--amber);color:#1b1407}
+.tabs button[aria-pressed="true"]{background:var(--amber);color:#1b1407}
 .tabs svg{flex:none}
 .search{position:relative;flex:1 1 130px;max-width:300px;min-width:0}
 .search input{width:100%;height:46px;border-radius:999px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);padding:0 14px 0 40px;min-width:0}
@@ -68,7 +68,7 @@ h2,h3,p,dl{margin:0}
 .clock{display:flex;align-items:center;gap:10px;padding:0 6px 0 16px;border-radius:999px;height:46px;white-space:nowrap;margin-left:auto;flex:none}
 .clock .num{font-size:16px;font-weight:500;padding-right:8px}
 .clock select{background:var(--tile);border:1px solid var(--line);border-radius:999px;padding:6px 12px;appearance:none;-webkit-appearance:none;cursor:pointer;margin-left:-6px}
-.clock select option{background:#fff}
+.clock select option{background:#161c2a}
 
 /* меню слоёв и карточка выбранного объекта */
 .menu{display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:18px}
@@ -76,7 +76,7 @@ h2,h3,p,dl{margin:0}
 .menu button{display:flex;align-items:center;gap:9px;padding:8px 14px 8px 11px;border-radius:12px;color:var(--muted);font-weight:500;white-space:nowrap}
 .menu button::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.45}
 .menu button:hover{color:var(--text)}
-.menu button[aria-pressed="true"]{background:rgba(19,41,75,.13);color:var(--text)}
+.menu button[aria-pressed="true"]{background:rgba(255,255,255,.13);color:var(--text)}
 .menu button[aria-pressed="true"]::before{background:var(--amber);opacity:1}
 #insp{width:min(292px,100%);max-height:100%;overflow:auto;scrollbar-width:none;flex:0 1 auto}
 #legend{width:min(250px,100%);padding:12px 14px}
@@ -98,7 +98,7 @@ h2,h3,p,dl{margin:0}
 .tile .viz{margin-top:auto;padding-top:8px}
 .tile svg{display:block;width:100%;height:auto;overflow:visible}
 .tile .gauge{max-width:132px;margin:2px auto 0}
-.gt{font:500 15px var(--display);fill:var(--text);letter-spacing:-.02em}
+.gt{font:500 15px var(--display);fill:#fff;letter-spacing:-.02em}
 .gs{font:400 9.5px var(--body);fill:var(--muted)}
 .rows{display:flex;flex-direction:column;gap:5px}
 .row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:5px 8px;align-items:baseline;width:100%;background:var(--tile);border-radius:var(--r-md);padding:9px 11px}
@@ -109,9 +109,9 @@ button.row:hover,.ev:hover{background:var(--tile-hover)}
 .row .p small{font:400 11px var(--body);color:var(--muted)}
 .row .note{grid-column:1/-1;font-size:11px;color:var(--muted)}.row .note.bad{color:var(--bad)}.row .note.ok{color:var(--ok)}
 .row.w{grid-template-columns:minmax(0,1fr) auto}.row.w .n{white-space:normal;font-weight:500}
-.bar{grid-column:1/-1;height:4px;border-radius:2px;background:rgba(19,41,75,.08);position:relative}
+.bar{grid-column:1/-1;height:4px;border-radius:2px;background:rgba(255,255,255,.08);position:relative}
 .bar i{display:block;height:100%;background:var(--amber);border-radius:2px;width:0}
-.bar u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);border-radius:1px}
+.bar u{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;border-radius:1px}
 .ev{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:2px 9px;width:100%;background:var(--tile);border-radius:var(--r-md);padding:9px 11px;cursor:pointer}
 .ev .dot{width:8px;height:8px;border-radius:50%;margin-top:5px;background:var(--warn)}
 .ev.bad .dot{background:var(--bad)}.ev.ok .dot{background:var(--ok)}
@@ -120,19 +120,19 @@ button.row:hover,.ev:hover{background:var(--tile-hover)}
 .ev em{font-style:normal;font:500 12px var(--display);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .wo{grid-column:2/-1;display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;margin-top:6px}
 .wo .segs{flex:1 0 100%;order:3;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
-.wo .segs i{height:5px;border-radius:3px;background:rgba(19,41,75,.1)}.wo .segs i.on{background:var(--amber)}
+.wo .segs i{height:5px;border-radius:3px;background:rgba(255,255,255,.1)}.wo .segs i.on{background:var(--amber)}
 .wo small{color:var(--muted);font-size:11px;flex:1;min-width:0}
-.mini{padding:5px 11px;border-radius:999px;background:rgba(19,41,75,.1);font-size:11.5px;white-space:nowrap}
-.mini:hover{background:rgba(19,41,75,.18)}.mini.go{background:var(--amber);color:#1b1407;font-weight:600}
+.mini{padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.1);font-size:11.5px;white-space:nowrap}
+.mini:hover{background:rgba(255,255,255,.18)}.mini.go{background:var(--amber);color:#1b1407;font-weight:600}
 .empty{color:var(--muted);font-size:12.5px;line-height:1.5}
 .foot{color:var(--faint);font-size:11px;line-height:1.45;padding:2px 6px 6px}
 
 .seg{display:flex;background:var(--tile);border-radius:999px;padding:3px;margin-bottom:10px}
 .seg button{flex:1 1 auto;padding:5px 4px;border-radius:999px;font-size:11.5px;color:var(--muted);text-align:center;white-space:nowrap}
-.seg button[aria-pressed="true"]{background:rgba(19,41,75,.15);color:var(--text)}
+.seg button[aria-pressed="true"]{background:rgba(255,255,255,.15);color:var(--text)}
 .crumbs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
 .crumbs button{padding:3px 8px;border-radius:999px;background:var(--tile);font-size:11.5px;color:var(--muted);white-space:nowrap}
-.crumbs button.cur{background:rgba(19,41,75,.16);color:var(--text)}
+.crumbs button.cur{background:rgba(255,255,255,.16);color:var(--text)}
 .x{width:26px;height:26px;border-radius:50%;background:var(--tile);display:grid;place-items:center;color:var(--muted);flex:none}
 .x:hover{background:var(--tile-hover);color:var(--text)}
 .insp-title{font:500 20px/1.15 var(--display);letter-spacing:-.02em;margin-bottom:2px}
@@ -150,7 +150,7 @@ button.row:hover,.ev:hover{background:var(--tile-hover)}
 .steps{display:flex;flex-direction:column;gap:7px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
 .step{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:1px 8px;align-items:center;font-size:12.5px}
 .step i{width:10px;height:10px;border-radius:50%;border:2px solid var(--faint)}
-.step.done i{background:var(--ok);border-color:var(--ok)}.step.now i{background:var(--amber);border-color:var(--warn)}
+.step.done i{background:var(--ok);border-color:var(--ok)}.step.now i{background:var(--amber);border-color:var(--amber)}
 .step small{grid-column:2/-1;color:var(--muted);font-size:11px}.step small.bad{color:var(--bad)}
 .step em{font-style:normal;color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ramp{height:7px;border-radius:4px;margin:9px 0 5px}
@@ -178,11 +178,11 @@ button.row:hover,.ev:hover{background:var(--tile-hover)}
 .axis{grid-column:2;position:relative;height:14px;color:var(--faint);font-size:10.5px;font-variant-numeric:tabular-nums;overflow:hidden}
 .axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}.axis span:first-child{transform:none}.axis span:last-child{transform:translateX(-100%)}
 .cap{position:absolute;left:0;top:-1px;right:0;color:var(--faint);font-size:11px;display:flex;gap:14px;pointer-events:none;white-space:nowrap;overflow:hidden}
-.cap i{display:inline-block;width:14px;height:2px;margin-right:5px;vertical-align:middle;background:var(--text)}
+.cap i{display:inline-block;width:14px;height:2px;margin-right:5px;vertical-align:middle;background:#fff}
 #bars{grid-column:1/-1;grid-row:1/-1;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;align-items:end;min-height:120px;padding-top:36px;position:relative}
 #bars .cap{white-space:normal;line-height:1.35;display:block}
 #bars div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%;font-size:10.5px;color:var(--faint)}
-#bars i{display:block;width:60%;max-width:24px;border-radius:6px;background:linear-gradient(#9FB2CC,#6F86A8)}
+#bars i{display:block;width:60%;max-width:24px;border-radius:6px;background:linear-gradient(#fff,#b9c0cf)}
 #bars .hi i{background:linear-gradient(#ffd98a,#f5b544)}
 #bars b{font:500 10.5px var(--display);color:var(--muted)}
 
@@ -194,37 +194,37 @@ button.row:hover,.ev:hover{background:var(--tile-hover)}
 .wf dt{color:var(--muted)}.wf dd{margin:0;text-align:right;font-family:var(--display);font-variant-numeric:tabular-nums}
 .wf .sum{color:var(--text);font-weight:600;border-top:1px solid var(--line);padding-top:8px;margin-top:2px}
 table.boq{width:100%;border-collapse:collapse;font-size:12px}
-.boq td{padding:6px 0;border-bottom:1px solid rgba(19,41,75,.06);vertical-align:baseline}
+.boq td{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:baseline}
 .boq td:nth-child(2){text-align:right;font-family:var(--display);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:8px}
 .boq small{color:var(--faint);display:block;font-size:10.5px}
 
 #labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-.lbl{position:absolute;left:0;top:0;display:flex;align-items:center;gap:7px;padding:4px 10px 4px 8px;border-radius:999px;background:rgba(255,255,255,.82);border:1px solid var(--line);font-size:11.5px;white-space:nowrap;will-change:transform;pointer-events:auto;cursor:pointer}
-.lbl i{width:7px;height:7px;background:var(--text);transform:rotate(45deg);border-radius:1.5px;box-shadow:0 0 0 3px rgba(19,41,75,.14);flex:none}
+.lbl{position:absolute;left:0;top:0;display:flex;align-items:center;gap:7px;padding:4px 10px 4px 8px;border-radius:999px;background:rgba(14,19,31,.82);border:1px solid var(--line);font-size:11.5px;white-space:nowrap;will-change:transform;pointer-events:auto;cursor:pointer}
+.lbl i{width:7px;height:7px;background:#fff;transform:rotate(45deg);border-radius:1.5px;box-shadow:0 0 0 3px rgba(255,255,255,.14);flex:none}
 .lbl b{font-weight:600}.lbl span{color:var(--muted);font-family:var(--display);font-variant-numeric:tabular-nums}
 .lbl span:empty{display:none}
 .lbl.alert{background:var(--amber);color:#1b1407;border-color:transparent}.lbl.alert i{background:#1b1407;box-shadow:none}.lbl.alert span{color:#553c08}
-.lbl.sel{outline:2px solid var(--text);outline-offset:2px}
+.lbl.sel{outline:2px solid #fff;outline-offset:2px}
 #tip{position:fixed;left:0;top:0;pointer-events:none;padding:6px 10px;border-radius:10px;background:var(--glass-strong);border:1px solid var(--line);font-size:11.5px;white-space:nowrap;opacity:0;transition:opacity .1s;z-index:9}
 #tip b{font-family:var(--display);font-weight:500}
-#boot{position:fixed;inset:0;display:grid;place-items:center;background:#EEF2F7;color:var(--muted);z-index:20;transition:opacity .6s}
+#boot{position:fixed;inset:0;display:grid;place-items:center;background:#0a0e16;color:var(--muted);z-index:20;transition:opacity .6s}
 #boot.gone{opacity:0;pointer-events:none}
 
 /* карта, разделы внутри стадии, ползунки, графики и таблицы новых экранов */
-#map{position:fixed;inset:0;display:none;background:#DDE3EA;z-index:0}
+#map{position:fixed;inset:0;display:none;background:#0a0e16;z-index:0}
 body.map #map{display:block}body.map #scene,body.map #labels{visibility:hidden}
-#map .leaflet-tooltip{background:rgba(255,255,255,.88);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:3px 9px;font:500 11.5px var(--body);box-shadow:none}
+#map .leaflet-tooltip{background:rgba(14,19,31,.88);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:3px 9px;font:500 11.5px var(--body);box-shadow:none}
 #map .leaflet-tooltip::before{display:none}
 #map.draw{cursor:crosshair}
 .views{display:flex;flex-wrap:wrap;gap:2px;padding:5px;border-radius:18px;flex:none}
 .views button{flex:1 1 auto;padding:7px 11px;border-radius:12px;color:var(--muted);font-weight:500;font-size:12.5px;white-space:nowrap;text-align:center}
 .views button:hover{color:var(--text)}
-.views button[aria-pressed="true"]{background:var(--text);color:#fff}
+.views button[aria-pressed="true"]{background:var(--amber);color:#1b1407}
 .sl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;align-items:baseline;background:var(--tile);border-radius:var(--r-md);padding:9px 11px;font-size:12px;color:var(--muted)}
 .sl output{font:500 14px var(--display);color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
-.sl input{grid-column:1/-1;width:100%;margin:4px 0 0;accent-color:var(--warn);height:18px}
+.sl input{grid-column:1/-1;width:100%;margin:4px 0 0;accent-color:var(--amber);height:18px}
 .sl small{grid-column:1/-1;font-size:11px;color:var(--faint)}
-.demo{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:999px;background:rgba(11,111,193,.1);color:#0B6FC1;white-space:nowrap;vertical-align:middle}
+.demo{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:999px;background:rgba(127,182,255,.14);color:#a9cbff;white-space:nowrap;vertical-align:middle}
 .note-line{font-size:12px;color:var(--muted);line-height:1.45;margin-top:9px}.note-line.ok{color:var(--ok)}.note-line.bad{color:var(--bad)}.note-line.warn{color:var(--warn)}
 .row.sel,.ev.sel{outline:1.5px solid var(--amber);outline-offset:-1.5px}
 .row .tag{font-size:10.5px;padding:1px 6px;border-radius:999px;background:var(--amber);color:#1b1407;font-weight:600;margin-left:6px}
@@ -235,22 +235,22 @@ body.map #map{display:block}body.map #scene,body.map #labels{visibility:hidden}
 .pl span{position:absolute;font-size:10.5px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;transform:translate(-50%,-50%);pointer-events:none}
 .pl span.l{transform:translate(0,-50%)}.pl span.r{transform:translate(-100%,-50%)}.pl span.hi{color:var(--text);font-weight:600}
 .pl.sm{min-height:86px;margin-top:8px}
-.pl i{position:absolute;width:8px;height:8px;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(255,255,255,.8)}
+.pl i{position:absolute;width:8px;height:8px;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(10,14,22,.8)}
 .xax{margin-top:3px}
 .xax{display:grid;font-size:10.5px;color:var(--faint);text-align:center}
 .tw{overflow:auto;scrollbar-width:thin;flex:1 1 auto;max-height:232px}
 table.cmp{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
 .cmp th{font-weight:400;color:var(--faint);font-size:11px;text-align:right;padding:2px 6px 6px;line-height:1.25;vertical-align:bottom}
 .cmp th:first-child,.cmp td:first-child{text-align:left;padding-left:8px}
-.cmp td{text-align:right;padding:6px 6px;border-top:1px solid rgba(19,41,75,.06);font-family:var(--display);font-variant-numeric:tabular-nums}
+.cmp td{text-align:right;padding:6px 6px;border-top:1px solid rgba(255,255,255,.06);font-family:var(--display);font-variant-numeric:tabular-nums}
 .cmp td:first-child{font-family:var(--body);font-weight:500}
 .cmp tr[data-var]{cursor:pointer}.cmp tr[data-var]:hover td{background:var(--tile)}
 .cmp tr.sel td{background:rgba(245,181,68,.13)}.cmp tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--amber)}
 .cmp .best{color:var(--ok);font-weight:600}.cmp .bad{color:var(--bad)}.cmp small{color:var(--faint);font-family:var(--body)}.cmp td:first-child small{display:block;font-weight:400;font-size:10.5px}
 .cmp .rm{color:var(--faint);padding:0 4px;font-size:14px;line-height:1}.cmp .rm:hover{color:var(--bad)}
-.drop{border:1.5px dashed rgba(19,41,75,.22);border-radius:var(--r-md);padding:14px 12px;text-align:center;color:var(--muted);font-size:12px;line-height:1.5;display:block;cursor:pointer}
-.drop:hover{border-color:var(--warn);color:var(--text)}.drop input{display:none}.drop b{display:block;color:var(--text);font-weight:600;margin-bottom:2px}
-.prog{height:5px;border-radius:3px;background:rgba(19,41,75,.1);margin:10px 0 2px;overflow:hidden}.prog i{display:block;height:100%;background:var(--amber);width:0}
+.drop{border:1.5px dashed rgba(255,255,255,.22);border-radius:var(--r-md);padding:14px 12px;text-align:center;color:var(--muted);font-size:12px;line-height:1.5;display:block;cursor:pointer}
+.drop:hover{border-color:var(--amber);color:var(--text)}.drop input{display:none}.drop b{display:block;color:var(--text);font-weight:600;margin-bottom:2px}
+.prog{height:5px;border-radius:3px;background:rgba(255,255,255,.1);margin:10px 0 2px;overflow:hidden}.prog i{display:block;height:100%;background:var(--amber);width:0}
 .step.wait{opacity:.45}
 .feed{font:400 11.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);display:flex;flex-direction:column;gap:1px;max-height:168px;overflow:hidden}
 .feed div{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px}.feed b{color:var(--text);font-weight:500}.feed div:first-child{color:var(--text)}
@@ -258,7 +258,7 @@ table.cmp{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
 @keyframes blink{50%{opacity:.25}}
 .torn{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 8px;align-items:center;font-size:12px}
 .torn span{color:var(--muted)}.torn em{font-style:normal;font-family:var(--display);font-size:11.5px;color:var(--muted);white-space:nowrap}
-.torn .b{height:10px;position:relative;background:linear-gradient(90deg,transparent calc(50% - .5px),rgba(19,41,75,.25) calc(50% - .5px),rgba(19,41,75,.25) calc(50% + .5px),transparent calc(50% + .5px))}
+.torn .b{height:10px;position:relative;background:linear-gradient(90deg,transparent calc(50% - .5px),rgba(255,255,255,.25) calc(50% - .5px),rgba(255,255,255,.25) calc(50% + .5px),transparent calc(50% + .5px))}
 .torn .b i{position:absolute;top:0;bottom:0;border-radius:2px}.torn .b i.neg{background:var(--bad)}.torn .b i.pos{background:var(--ok)}
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
 @media (max-width:1280px){.brand span{display:none}}
@@ -310,13 +310,13 @@ table.cmp{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
 
 <div id="ui">
   <header id="top">
-    <a class="brand glass" href="design.html#/projects" style="color:inherit;text-decoration:none"><div class="brand-mark"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#16233B" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="3.2"/><path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.7 3.7l1.4 1.4M12.9 12.9l1.4 1.4M3.7 14.3l1.4-1.4M12.9 5.1l1.4-1.4"/></svg></div><div><b>Платформа ВИЭ</b><span>СЭС Арал 30 МВт</span></div></a>
+    <div class="brand glass"><div class="brand-mark"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#1b1407" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="3.2"/><path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.7 3.7l1.4 1.4M12.9 12.9l1.4 1.4M3.7 14.3l1.4-1.4M12.9 5.1l1.4-1.4"/></svg></div><div><b>Платформа ВИЭ</b><span>СЭС Арал 30 МВт</span></div></div>
     <nav class="tabs glass" id="tabs" aria-label="Режим">
       <a href="design.html">Проектирование</a>
       <a href="construct.html" id="tab-build">Строительство</a>
-      <button data-stage="ops" aria-pressed="true">Эксплуатация</button>
+      <button data-stage="ops" aria-pressed="true"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2 4 11.5h5.2L8.4 18 16 8.2h-5.4z"/></svg>Эксплуатация</button>
       <button data-stage="build" aria-pressed="false" hidden>Стройка</button>
-      <button data-stage="cost" aria-pressed="false">Смета</button>
+      <button data-stage="cost" aria-pressed="false"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="12" height="15" rx="2.5"/><path d="M7 6.5h6M7 10.5h6M7 14h3"/></svg>Смета</button>
     </nav>
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.6"/><path d="M10.6 10.6 14 14"/></svg>
@@ -343,12 +343,12 @@ table.cmp{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
       <div class="chart" id="tl-chart">
         <span class="cap" id="cap"></span>
         <svg viewBox="0 0 1000 100" preserveAspectRatio="none">
-          <path id="c-plan" fill="none" stroke="rgba(19,41,75,.75)" stroke-width="1.3" vector-effect="non-scaling-stroke"/>
-          <path id="c-ghost" fill="rgba(19,41,75,.06)"/>
+          <path id="c-plan" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.3" vector-effect="non-scaling-stroke"/>
+          <path id="c-ghost" fill="rgba(255,255,255,.06)"/>
           <path id="c-area" fill="url(#gA)"/>
           <path id="c-line" fill="none" stroke="#f5b544" stroke-width="1.8" vector-effect="non-scaling-stroke"/>
           <path id="c-fc" fill="none" stroke="#f5b544" stroke-width="1.4" stroke-dasharray="5 5" vector-effect="non-scaling-stroke"/>
-          <line id="c-cur" y1="0" y2="100" stroke="#16233B" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+          <line id="c-cur" y1="0" y2="100" stroke="#fff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
         </svg>
         <input id="t" type="range" min="0" max="1435" step="5" value="750" aria-label="Время">
       </div>
@@ -367,9 +367,9 @@ table.cmp{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
 <script src="engine.js?v=5"></script>
 <script src="store.js?v=5"></script>
 <script src="dev.js?v=3"></script>
-<script src="oms.js?v=4"></script>
+<script src="oms.js?v=3"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="ui.js?v=4"></script>
+<script src="ui.js?v=3"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
 </script>
@@ -678,12 +678,12 @@ function paint(){
   ledGeo.attributes.color.needsUpdate = true;
 }
 function applySun(){
-  const s = live.sun, dir = new THREE.Vector3(s.x,s.y,s.z), sd = dir.clone(); if(sd.y<0.09){ sd.y = 0.09; sd.normalize(); } sky.material.uniforms.sunPosition.value.copy(sd);   // небо не темнее ранних сумерек: интерфейс светлый
+  const s = live.sun, dir = new THREE.Vector3(s.x,s.y,s.z); sky.material.uniforms.sunPosition.value.copy(dir);
   const k = THREE.MathUtils.smoothstep(s.el*DEG,-3,9), low = THREE.MathUtils.smoothstep(s.el*DEG,0,22);
   sunL.intensity = 3.6*k; sunL.color.setRGB(1,.72+.26*low,.5+.44*low); sunL.position.copy(dir).multiplyScalar(1300); if(s.y<0.02) sunL.position.y = 30;
-  hemi.intensity = 1.25-.2*k; hemi.color.setRGB(.7+.15*k,.78+.1*k,1); hemi.groundColor.setRGB(.3*k+.25,.26*k+.23,.2*k+.2);
-  scene.fog.color.set(0x93a3bd).lerp(new THREE.Color(0xd2a383), k).lerp(new THREE.Color(0xbcc7d4), low);
-  renderer.toneMappingExposure = .78-.24*k; envDirty = true;
+  hemi.intensity = .1+.95*k; hemi.color.setRGB(.55+.3*k,.66+.22*k,1); hemi.groundColor.setRGB(.5*k+.05,.44*k+.05,.33*k+.06);
+  scene.fog.color.set(0x0b1019).lerp(new THREE.Color(0xd2a383), k).lerp(new THREE.Color(0xbcc7d4), low);
+  renderer.toneMappingExposure = .34+.2*k; envDirty = true;
 }
 function refreshEnv(){ envScene.add(sky); const rt = pmrem.fromScene(envScene, 0, 1, 12000); scene.add(sky); if(envRT) envRT.dispose(); envRT = rt; scene.environment = rt.texture; scene.environmentIntensity = .25+.75*THREE.MathUtils.smoothstep(live.sun.el*DEG,-4,10); }
 
@@ -691,16 +691,16 @@ function refreshEnv(){ envScene.add(sky); const rt = pmrem.fromScene(envScene, 0
 const hhmm = m => String(Math.floor(m/60)).padStart(2,'0')+':'+String(Math.round(m%60)).padStart(2,'0');
 function spark(vals, upto, dots){
   const w=150, h=38, n=vals.length, mx=Math.max(...vals,1e-6), pts=vals.map((v,i)=>[+(i/(n-1)*w).toFixed(1), +(h-3-v/mx*(h-8)).toFixed(1)]), cut=Math.max(1,Math.min(n-1,Math.round(upto*(n-1)))), line=pts.slice(0,cut+1).join(' ');
-  return `<svg viewBox="0 0 ${w} ${h}"><polyline points="${pts.join(' ')}" fill="none" stroke="rgba(19,41,75,.22)" ${dots?'stroke-width="1.6" stroke-dasharray="0.1 4" stroke-linecap="round"':'stroke-width="1"'}/><polygon points="0,${h} ${line} ${pts[cut][0]},${h}" fill="url(#gA)"/><polyline points="${line}" fill="none" stroke="#f5b544" stroke-width="1.6" stroke-linejoin="round"/><circle cx="${pts[cut][0]}" cy="${pts[cut][1]}" r="2.8" fill="#fff"/></svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}"><polyline points="${pts.join(' ')}" fill="none" stroke="rgba(255,255,255,.22)" ${dots?'stroke-width="1.6" stroke-dasharray="0.1 4" stroke-linecap="round"':'stroke-width="1"'}/><polygon points="0,${h} ${line} ${pts[cut][0]},${h}" fill="url(#gA)"/><polyline points="${line}" fill="none" stroke="#f5b544" stroke-width="1.6" stroke-linejoin="round"/><circle cx="${pts[cut][0]}" cy="${pts[cut][1]}" r="2.8" fill="#fff"/></svg>`;
 }
 function gauge(p, text, sub){
   p = Math.max(0,Math.min(100,p));
-  return `<svg class="gauge" viewBox="0 0 100 64"><path d="M10 54A40 40 0 0 1 90 54" fill="none" stroke="rgba(19,41,75,.1)" stroke-width="7" stroke-linecap="round"/><path d="M10 54A40 40 0 0 1 90 54" fill="none" stroke="#f5b544" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="${p} 100"/><text x="50" y="49" text-anchor="middle" class="gt">${text}</text>${sub?`<text x="50" y="61" text-anchor="middle" class="gs">${sub}</text>`:''}</svg>`;
+  return `<svg class="gauge" viewBox="0 0 100 64"><path d="M10 54A40 40 0 0 1 90 54" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="7" stroke-linecap="round"/><path d="M10 54A40 40 0 0 1 90 54" fill="none" stroke="#f5b544" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="${p} 100"/><text x="50" y="49" text-anchor="middle" class="gt">${text}</text>${sub?`<text x="50" y="61" text-anchor="middle" class="gs">${sub}</text>`:''}</svg>`;
 }
 function ring(parts, center, sub){   // parts: [name, value, colour]
   const tot = parts.reduce((s,p)=>s+p[1],0)||1; let off = 0;
   const arcs = parts.map(p=>{const len=p[1]/tot*100, a=`<circle cx="50" cy="50" r="40" fill="none" stroke="${p[2]}" stroke-width="9" pathLength="100" stroke-dasharray="${Math.max(0,len-1.2)} ${100-Math.max(0,len-1.2)}" stroke-dashoffset="${-off}" stroke-linecap="round"/>`; off+=len; return a;}).join('');
-  return `<div class="ring"><div class="c"><svg viewBox="0 0 100 100" style="transform:rotate(-90deg);display:block"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(19,41,75,.07)" stroke-width="9"/>${arcs}</svg><b>${center}</b>${sub?`<small>${sub}</small>`:''}</div><ul>${parts.map(p=>`<li><span><i style="background:${p[2]}"></i>${p[0]}</span><b>${fmt(p[1]/tot*100,1)} %</b></li>`).join('')}</ul></div>`;
+  return `<div class="ring"><div class="c"><svg viewBox="0 0 100 100" style="transform:rotate(-90deg);display:block"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="9"/>${arcs}</svg><b>${center}</b>${sub?`<small>${sub}</small>`:''}</div><ul>${parts.map(p=>`<li><span><i style="background:${p[2]}"></i>${p[0]}</span><b>${fmt(p[1]/tot*100,1)} %</b></li>`).join('')}</ul></div>`;
 }
 const pw = kw => kw<1 ? fmt(kw*1000)+' Вт' : kw<1000 ? fmt(kw,1)+' кВт' : fmt(kw/1000,2)+' МВт';
 
@@ -755,7 +755,7 @@ function renderOps(){
       :e.fix?`<div class="wo"><small></small><button class="mini" data-new="${e.key}">Создать наряд</button></div>`:''}</div>`;}).join('') + (S.fixed?`<p class="empty" style="margin-top:4px">Устранено за сессию: ${S.fixed}. Мощность пересчитана.</p>`:'');
   } else UI.render('ops', S.view.ops);
   const b = L.bal;
-  $('#side').innerHTML = `<div class="card-head"><h2>Куда уходит мощность</h2></div>` + (L.day&&b.ref>1 ? ring([['В сеть',b.grid,'#f5b544'],['Нагрев',Math.max(0,b.temp),'#b5367a'],['Пыль',b.soil,'#8d7b5a'],['Отказы',b.fault,'#ff6452'],['Электрика',b.conv,'#0B6FC1']].concat(b.curt>1?[['Ограничение',b.curt,'#9aa3b5']]:[]), fmt(b.grid/(b.grid+Math.max(0,b.temp)+b.soil+b.fault+b.conv+b.curt)*100)+' %', 'в сеть') : `<p class="empty">Ночью станция не вырабатывает. Сдвиньте время на шкале справа.</p>`);
+  $('#side').innerHTML = `<div class="card-head"><h2>Куда уходит мощность</h2></div>` + (L.day&&b.ref>1 ? ring([['В сеть',b.grid,'#f5b544'],['Нагрев',Math.max(0,b.temp),'#b5367a'],['Пыль',b.soil,'#8d7b5a'],['Отказы',b.fault,'#ff6452'],['Электрика',b.conv,'#7fb6ff']].concat(b.curt>1?[['Ограничение',b.curt,'#9aa3b5']]:[]), fmt(b.grid/(b.grid+Math.max(0,b.temp)+b.soil+b.fault+b.conv+b.curt)*100)+' %', 'в сеть') : `<p class="empty">Ночью станция не вырабатывает. Сдвиньте время на шкале справа.</p>`);
   drawTimeline(); alertLabels();
 }
 function drawTimeline(){
@@ -818,7 +818,7 @@ function renderBuild(){
   $('#b-qc').innerHTML = m.open.length ? m.open.slice(-6).reverse().map(q=>`<div class="ev ${q.sev}" data-t="${q.t}"><i class="dot"></i><b>${tName(q.t)}</b><em>${fmt(D-q.found)} дн.</em><span>${q.text}</span></div>`).join('') : `<p class="empty">Открытых замечаний нет.</p>`;
   const mods = m.acts.find(x=>x.id==='mods');
   $('#side').innerHTML = `<div class="card-head"><h2>Склад</h2><span class="pill ${m.stopped||(m.stockDays<7&&m.del<m.total&&mods.started&&!mods.done)?'warn':'off'}"><i></i><span>${mods.done?'смонтировано':m.stopped?'монтаж стоит':m.del>=m.total?'всё привезено':mods.rate>1?'запас '+fmt(m.stockDays)+' дн.':'монтаж не начат'}</span></span></div>`+
-    ring([['На столах',m.inst,'#f5b544'],['На складе',m.stock,'#0B6FC1'],['Не привезено',m.total-m.del,'rgba(19,41,75,.18)']], fmt(m.inst/m.total*100)+' %', 'смонтировано');
+    ring([['На столах',m.inst,'#f5b544'],['На складе',m.stock,'#7fb6ff'],['Не привезено',m.total-m.del,'rgba(255,255,255,.18)']], fmt(m.inst/m.total*100)+' %', 'смонтировано');
   drawTimeline();
   SITE.ktp.forEach(k=>{let n=0,tot=0; for(let t=0;t<NT;t++) if(tZone[t]===k.id){tot++; n+=tFrac[t];} labels[k.id].el.querySelector('span').textContent = fmt(n/tot*100)+' %';});
 }
@@ -838,7 +838,7 @@ function renderCost(){
   const hi = y.months.indexOf(Math.max(...y.months)), mx = y.months[hi];
   $('#bars').innerHTML = `<span class="cap">Выработка по месяцам, ГВт·ч. За год ${fmt(y.total/1000,1)} ГВт·ч, это ${fmt(y.total*1000/M.dcKw)} кВт·ч на кВт. В отчёте PVsyst ${fmt(EPC.pvsyst.e50/1000,1)} ГВт·ч</span>`+
     y.months.map((v,i)=>`<div class="${i===hi?'hi':''}"><b>${fmt(v/1000,1)}</b><i style="height:${(v/mx*56).toFixed(0)}px"></i>${MON[i]}</div>`).join('');
-  const L = EPC.SMETA.local, tot = L.reduce((s,x)=>s+x.v,0), cols = ['#f5b544','#0B6FC1','#62d6a0','#b5367a','#c9a26b','#ff6452','#8d95a8','#5d6474','#454b59'];
+  const L = EPC.SMETA.local, tot = L.reduce((s,x)=>s+x.v,0), cols = ['#f5b544','#7fb6ff','#62d6a0','#b5367a','#c9a26b','#ff6452','#8d95a8','#5d6474','#454b59'];
   $('#side').innerHTML = `<div class="card-head"><h2>Прямые затраты</h2></div>`+ring(['Оборудование','Кабели DC','Генплан','Сваи'].map((n,i)=>[n,L[i].v,cols[i]]).concat([['Сети и связь',L.slice(4).reduce((s,x)=>s+x.v,0),cols[6]]]), fmt(tot/1e6,2), 'млрд ₸');
 }
 const FIN_FIELDS = [['tariff','Тариф, ₸/кВт·ч','fin'],['index','Индексация, % в год','fin'],['opex','Эксплуатация, % в год','fin'],['rate','Ставка дисконта, %','fin'],['degr','Деградация, % в год','fin'],['years','Срок, лет','fin'],['fx','Курс, ₸ за $','fin'],['kEquip','Оборудование, ±%','cost'],['kSmr','Работы, ±%','cost'],['cont','Непредвиденные, %','cost']];

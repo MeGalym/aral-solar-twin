@@ -16,9 +16,9 @@
   const X = v => (v * 1000).toFixed(1), Y = v => (100 - v * 100).toFixed(1), path = pts => pts.length ? 'M' + pts.map(p => X(p[0]) + ',' + Y(p[1])).join('L') : '';
   function PL(o) {
     const svg = (o.paths || []).map(p => p.rect ? `<rect x="${X(p.rect[0])}" y="${Y(p.rect[1] + p.rect[3])}" width="${(p.rect[2] * 1000).toFixed(1)}" height="${(Math.max(0, p.rect[3]) * 100).toFixed(1)}" rx="2" fill="${p.fill}"/>` : `<path d="${p.d}${p.area ? `L${X(p.area[1])},100L${X(p.area[0])},100Z` : ''}" fill="${p.fill || 'none'}" stroke="${p.stroke || 'none'}" stroke-width="${p.w || 1.6}" ${p.dash ? `stroke-dasharray="${p.dash}"` : ''} vector-effect="non-scaling-stroke"/>`).join('');
-    const grid = (o.grid || [0.25, 0.5, 0.75, 1]).map(g => `<path d="M0,${Y(g * (o.top || 0.92))}L1000,${Y(g * (o.top || 0.92))}" stroke="rgba(19,41,75,.08)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('');
+    const grid = (o.grid || [0.25, 0.5, 0.75, 1]).map(g => `<path d="M0,${Y(g * (o.top || 0.92))}L1000,${Y(g * (o.top || 0.92))}" stroke="rgba(255,255,255,.08)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('');
     const lab = (o.labels || []).map(l => l.dot ? `<i style="left:${(l.x * 100).toFixed(1)}%;top:${(100 - l.y * 100).toFixed(1)}%;background:${l.dot}"></i>` : `<span class="${l.cls || ''}" style="left:${(l.x * 100).toFixed(1)}%;top:${(100 - l.y * 100).toFixed(1)}%">${l.t}</span>`).join('');
-    return `<div class="pl ${o.cls || ''}"><svg viewBox="0 0 1000 100" preserveAspectRatio="none"><path d="M0,100L1000,100" stroke="rgba(19,41,75,.25)" stroke-width="1" vector-effect="non-scaling-stroke"/>${grid}${svg}</svg>${lab}</div>`;
+    return `<div class="pl ${o.cls || ''}"><svg viewBox="0 0 1000 100" preserveAspectRatio="none"><path d="M0,100L1000,100" stroke="rgba(255,255,255,.25)" stroke-width="1" vector-effect="non-scaling-stroke"/>${grid}${svg}</svg>${lab}</div>`;
   }
   const xax = (labels, tpl) => `<div class="xax" style="grid-template-columns:${tpl || `repeat(${labels.length},minmax(0,1fr))`}">${labels.map((l, i) => `<span style="text-align:${!tpl ? 'center' : i === 0 ? 'left' : i === labels.length - 1 ? 'right' : 'center'}">${l}</span>`).join('')}</div>`;
   const leg = items => `<div class="leg">${items.map(c => `<span><i style="background:${c[0]}"></i>${c[1]}</span>`).join('')}</div>`;
