@@ -109,6 +109,8 @@
     });
     plan[a.id] = { s: ps, e: pe }; fact[a.id] = { s: fs, e: fe };
   }
+  /* факт с площадки (экран «Обмен данными»): даты по элементам заменяют сценарий */
+  let factOver = 0; try { const O = JSON.parse(localStorage.getItem('vie-fact-v1') || '{}'); for (const id in O) if (fact[id]) for (const el in O[id]) { const v = O[id][el]; if (+el < fact[id].e.length && v[1] >= v[0]) { fact[id].s[el] = v[0]; fact[id].e[el] = v[1]; factOver++; } } } catch (e) {}
   function invDcDone(ii) { let m = 0; SITE.trackers.forEach((t, i) => { if (t[3] === ii || t[4] === ii || t[5] === ii) m = Math.max(m, fact.dc.e[i]); }); return m; }
   // Пропуски монтажа: блок сдан, а части модулей нет — находит сверка с проектом
   const R = rng(522), missed = {};
@@ -179,6 +181,6 @@
       missing: d < PUNCH ? Object.keys(missed).filter(t => d >= fact.mods.e[t] + 5).map(Number) : [] };
   }
 
-  window.EPC = { SMETA, COST_DEFAULTS, FIN_DEFAULTS, capex, finance, boq, ACT, PD, MAXD, DAY0, dateOf, curvePlan, curveFact, cashPlan, factEnd, trackerState, steps, metrics, qc, missed, delivered, plan, fact,
+  window.EPC = { factOver, SMETA, COST_DEFAULTS, FIN_DEFAULTS, capex, finance, boq, ACT, PD, MAXD, DAY0, dateOf, curvePlan, curveFact, cashPlan, factEnd, trackerState, steps, metrics, qc, missed, delivered, plan, fact,
     pvsyst: { e50: 52135.6, e90: 50930.4, ghi: 1380.0, poa: 1811.6, pr: 95.89, tamb: 9.46 } };
 })();

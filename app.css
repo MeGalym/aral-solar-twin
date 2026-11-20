@@ -1,5 +1,5 @@
 /* Единое оформление рабочих разделов Платформы ВИЭ: серое стекло, те же шрифты и акцент, что в дашборде станции */
-:root{--bg:#3a4354;--glass:rgba(22,28,42,.58);--strong:rgba(20,26,39,.94);--tile:rgba(255,255,255,.06);--tile2:rgba(255,255,255,.11);--line:rgba(255,255,255,.11);--text:#f2f4f8;--muted:#aab3c4;--faint:#7d8799;--amber:#f5b544;--ok:#62d6a0;--warn:#f5b544;--bad:#ff6452;--blue:#7fb6ff;--r:14px;
+:root{color-scheme:dark;--bg:#3a4354;--glass:rgba(22,28,42,.58);--strong:rgba(20,26,39,.94);--tile:rgba(255,255,255,.06);--tile2:rgba(255,255,255,.11);--line:rgba(255,255,255,.11);--text:#f2f4f8;--muted:#aab3c4;--faint:#7d8799;--amber:#f5b544;--ok:#62d6a0;--warn:#f5b544;--bad:#ff6452;--blue:#7fb6ff;--r:14px;
   --display:"Geologica","Golos Text",system-ui,sans-serif;--body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
