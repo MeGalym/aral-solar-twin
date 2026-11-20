@@ -53,6 +53,39 @@
       return { name: f[0], kind: f[1], pos, work, util: Math.round(use / 14 * 100 * (stopped ? 0.6 : 1)), idle: work ? 0 : Math.min(14, 14 - use) }; });
   }
 
+  /* ───────── снимок сверху на дату: рисуется по состоянию модели поверх спутникового снимка участка ─────────
+     Настоящих фото с дрона в проекте нет. Слой показывает то, что увидел бы облёт: потревоженный грунт, сваи,
+     балки трекеров, модули с ячейками и тенями, паллеты на складе, технику у фронта работ. */
+  const hsh = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  function photoLayer(d) {
+    const Lyr = L.GridLayer.extend({ createTile(c) {
+      const cv = document.createElement('canvas'), ts = this.getTileSize(); cv.width = ts.x; cv.height = ts.y; const g = cv.getContext('2d'), m = this._map, z = c.z, ox = c.x * ts.x, oy = c.y * ts.y;
+      const mpp = 156543.03392 * Math.cos(P.lat * Math.PI / 180) / Math.pow(2, z), px = v => v / mpp, pt = (x, zz) => { const q = m.project(L.latLng(ll(x, zz)), z); return [q.x - ox, q.y - oy]; };
+      const rc = (x, zz, w, h, col) => { const q = pt(x - w / 2, zz - h / 2); g.fillStyle = col; g.fillRect(q[0], q[1], Math.max(0.6, px(w)), Math.max(0.6, px(h))); };
+      const vis = (x, zz, r) => { const q = pt(x, zz), k = px(r); return q[0] > -k && q[0] < ts.x + k && q[1] > -k && q[1] < ts.y + k; };
+      /* проезды: уплотнённый светлый грунт */
+      const cvp = prog('civil', d)[1], R = SITE.roads; if (cvp > 0.02) { const n = R.north - FENZ, s2 = R.south - FENZ, w = R.west - FENX, e = R.east - FENX, pts = [[SITE.field.x0 - 96 - FENX, n], [e, n], [e, s2], [w, s2], [w, n]], k = Math.max(2, Math.ceil(pts.length * Math.min(1, cvp * 1.4)));
+        g.strokeStyle = 'rgba(214,201,170,.92)'; g.lineWidth = Math.max(1, px(5)); g.lineJoin = 'round'; g.beginPath(); pts.slice(0, k).forEach((q, i) => { const a = pt(q[0], q[1]); i ? g.lineTo(a[0], a[1]) : g.moveTo(a[0], a[1]); }); g.stroke(); }
+      /* площадка складирования и паллеты */
+      if (vis(LAYDOWN[0] + 9, LAYDOWN[1] + 9, 60)) { rc(LAYDOWN[0] + 9, LAYDOWN[1] + 9, 48, 36, 'rgba(196,188,170,.9)'); const np = Math.min(70, Math.round(EPC.metrics(d).stock / 620)); for (let i = 0; i < np; i++) { const x = LAYDOWN[0] - 10 + (i % 10) * 3.8, zz = LAYDOWN[1] - 5 + (i / 10 | 0) * 4.4; rc(x + 0.5, zz + 0.4, 2.4, 3.2, 'rgba(0,0,0,.28)'); rc(x, zz, 2.4, 3.2, hsh(i) > 0.5 ? '#F3EFE4' : '#E6DFCF'); } }
+      /* столы */
+      for (let t = 0; t < NT; t++) { if (!vis(TX[t], TZ[t], LEN / 2 + 6)) continue; const s = EPC.trackerState(t, d); if (s.piles <= 0) continue; const z0 = TZ[t] - LEN / 2;
+        rc(TX[t], z0 + LEN * Math.min(1, s.piles / 15) / 2, 5.4, LEN * Math.min(1, s.piles / 15), 'rgba(208,193,160,.42)');                      // потревоженный грунт вдоль ряда
+        if (!s.tube) { for (let k = 0; k < s.piles; k++) { const zz = z0 + 1.2 + k * (LEN - 2.4) / 14; rc(TX[t] + 0.5, zz + 0.3, 0.7, 0.5, 'rgba(0,0,0,.4)'); rc(TX[t], zz, 0.55, 0.55, '#3F444C'); } continue; }
+        rc(TX[t] + 0.45, TZ[t] + 0.3, 0.3, LEN, 'rgba(0,0,0,.3)'); rc(TX[t], TZ[t], 0.32, LEN, '#A7ADB6');                                         // балка трекера с тенью
+        if (s.mods > 0) { const h = LEN * s.mods / 81, zc = z0 + h / 2, a = pt(TX[t] - W / 2, z0), w = Math.max(1, px(W)), hh = Math.max(1, px(h));
+          rc(TX[t] + 1.3, zc + 0.9, W, h, 'rgba(8,6,2,.42)');                                                                                       // тень стола
+          const gr = g.createLinearGradient(a[0], 0, a[0] + w, 0), v = hsh(t) * 0.12; gr.addColorStop(0, `rgb(${20 + v * 40 | 0},${34 + v * 50 | 0},${74 + v * 60 | 0})`); gr.addColorStop(0.5, `rgb(${30 + v * 40 | 0},${50 + v * 50 | 0},${102 + v * 60 | 0})`); gr.addColorStop(1, `rgb(${16 + v * 40 | 0},${27 + v * 50 | 0},${60 + v * 60 | 0})`); g.fillStyle = gr; g.fillRect(a[0], a[1], w, hh);
+          const mp = px(M0.moduleWid || 1.303); if (mp >= 2.2) { g.strokeStyle = 'rgba(190,205,232,.5)'; g.lineWidth = Math.min(1, mp / 6); g.beginPath(); for (let k = 0; k <= s.mods; k++) { const y = a[1] + k * hh / s.mods; g.moveTo(a[0], y); g.lineTo(a[0] + w, y); } g.stroke(); if (mp >= 6) { g.strokeStyle = 'rgba(150,170,210,.28)'; g.beginPath(); for (let k = 1; k < 6; k++) { const x = a[0] + k * w / 6; g.moveTo(x, a[1]); g.lineTo(x, a[1] + hh); } g.stroke(); } }
+          g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(a[0] + w * 0.12, a[1], w * 0.16, hh); } }
+      /* инверторы, подстанции, техника */
+      SITE.inverters.forEach((v, i) => { if (d >= EPC.fact.inv.e[i] && vis(v.x - FENX, v.z - FENZ, 3)) { rc(v.x - FENX + 0.4, v.z - FENZ + 0.3, 1.2, 0.5, 'rgba(0,0,0,.4)'); rc(v.x - FENX, v.z - FENZ, 1.2, 0.5, '#EEF0F2'); } });
+      SITE.ktp.forEach((k, i) => { const x = k.x - FENX, zz = k.z - FENZ; if (!vis(x, zz, 20)) return; rc(x, zz, 7, 15, 'rgba(176,172,160,.95)'); if (d >= EPC.fact.ktp.e[i]) { rc(x + 1, zz - 0.5, 2.6, 6.2, 'rgba(0,0,0,.4)'); rc(x, zz - 1.2, 2.5, 6.1, '#F1F2F3'); rc(x, zz + 3.8, 2.2, 2.6, '#4A515C'); } });
+      fleet(d).forEach((f, i) => { if (!vis(f.pos[0], f.pos[1], 8)) return; rc(f.pos[0] + 0.8, f.pos[1] + 0.6, 2.6, 5.5, 'rgba(0,0,0,.4)'); rc(f.pos[0], f.pos[1], 2.6, 5.5, i % 3 ? '#E3A21A' : '#D9D4C8'); rc(f.pos[0], f.pos[1] - 1.4, 2, 1.6, '#2B2F36'); });
+      return cv; } });
+    return new Lyr({ maxZoom: 21, maxNativeZoom: 21, updateWhenZooming: false, keepBuffer: 1, className: 'photo-layer' });
+  }
+
   /* ───────── оболочка ───────── */
   function render() {
     U.top('build');
@@ -70,7 +103,7 @@
       <div class="over o-left" id="o-left"></div><div class="over o-right" id="o-right"></div><div class="over o-bot" id="o-bot"></div>${st.agent ? '<div class="agent" id="agent"></div>' : ''}</div>`;
     if (!window.L) { $('#cm').innerHTML = '<p class="note" style="padding:20px">Карта не загрузилась: нужен доступ в интернет.</p>'; return; }
     const mk = id => { const m = L.map(id, { zoomControl: false, preferCanvas: true, zoomSnap: 0.25, doubleClickZoom: false, attributionControl: true }); m.attributionControl.setPrefix(false); U.setBase(m, st.base); return m; };
-    map = mk('cm'); grp = L.layerGroup().addTo(map); map.on('zoomend', () => { if (st.mode === 'photo') draw(map, grp, st.day); });
+    map = mk('cm'); grp = L.layerGroup().addTo(map); 
     const b = L.latLngBounds(P.boundary.map(q => ll(q[0], q[1]))), pad = innerWidth > 860 && !st.compare ? { paddingTopLeft: [340, 20], paddingBottomRight: [280, 90] } : { padding: [20, 20] }; map.fitBounds(b, pad);
     map.on('click', ev => pick(ev.latlng));
     if (st.compare) { mapB = mk('cmB'); grpB = L.layerGroup().addTo(mapB); mapB.fitBounds(b, pad); let lock = false; const sync = (a, c) => a.on('move', () => { if (lock) return; lock = true; c.setView(a.getCenter(), a.getZoom(), { animate: false }); lock = false; }); sync(map, mapB); sync(mapB, map); }
@@ -86,24 +119,19 @@
     if (!m) return; g.clearLayers(); const Ly = st.layers, photo = st.mode === 'photo', z = m.getZoom();
     if (Ly.fence) L.polygon(P.boundary.map(q => ll(q[0], q[1])), { color: '#F2B705', weight: 2.5, fill: false, dashArray: '8 5', interactive: false }).addTo(g);
     const cv = prog('civil', d)[1];
-    if (Ly.roads && cv > 0.02) { const R = SITE.roads, n = R.north - FENZ, s2 = R.south - FENZ, w = R.west - FENX, e = R.east - FENX, pts = [[SITE.field.x0 - 96 - FENX, n], [e, n], [e, s2], [w, s2], [w, n]].map(q => ll(q[0], q[1])); L.polyline(pts.slice(0, Math.max(2, Math.ceil(pts.length * Math.min(1, cv * 1.4)))), { color: photo ? '#CBBE9F' : '#8D8473', weight: photo ? 5 : 3, opacity: 0.9, interactive: false }).addTo(g); }
-    if (Ly.lay) { L.polygon(rectLL(LAYDOWN[0] + 9, LAYDOWN[1] + 9, 46, 34), { color: '#56637A', weight: 1, fillColor: '#C9CED6', fillOpacity: photo ? 0.75 : 0.35 }).bindTooltip('Площадка складирования', { className: 'lbl' }).addTo(g);
+    if (Ly.roads && cv > 0.02 && !photo) { const R = SITE.roads, n = R.north - FENZ, s2 = R.south - FENZ, w = R.west - FENX, e = R.east - FENX, pts = [[SITE.field.x0 - 96 - FENX, n], [e, n], [e, s2], [w, s2], [w, n]].map(q => ll(q[0], q[1])); L.polyline(pts.slice(0, Math.max(2, Math.ceil(pts.length * Math.min(1, cv * 1.4)))), { color: photo ? '#CBBE9F' : '#8D8473', weight: photo ? 5 : 3, opacity: 0.9, interactive: false }).addTo(g); }
+    if (Ly.lay && !photo) { L.polygon(rectLL(LAYDOWN[0] + 9, LAYDOWN[1] + 9, 46, 34), { color: '#56637A', weight: 1, fillColor: '#C9CED6', fillOpacity: 0.35 }).bindTooltip('Площадка складирования', { className: 'lbl' }).addTo(g);
       if (photo) { const stock = EPC.metrics(d).stock, np = Math.min(60, Math.round(stock / 620)), pal = []; for (let i = 0; i < np; i++) pal.push(rectLL(LAYDOWN[0] - 8 + (i % 10) * 3.6, LAYDOWN[1] - 4 + (i / 10 | 0) * 4.2, 2.4, 3.2)); if (pal.length) L.polygon(pal, { color: '#fff', weight: 0.5, fillColor: '#F4F1E8', fillOpacity: 1, interactive: false }).addTo(g); } }
     if (Ly.tables) {
-      if (photo) { const mods = [], tubes = [], piles = [], bare = [];
-        for (let t = 0; t < NT; t++) { const s = EPC.trackerState(t, d), z0 = TZ[t] - LEN / 2; if (s.mods > 0) mods.push(rectLL(TX[t], z0 + LEN * s.mods / 81 / 2, W, LEN * s.mods / 81)); if (s.tube && s.mods < 81) tubes.push(rectLL(TX[t], TZ[t], 0.35, LEN)); if (s.piles > 0 && !s.tube && z >= 16.5) for (let k = 0; k < s.piles; k++) piles.push(rectLL(TX[t], z0 + 1.2 + k * (LEN - 2.4) / 14, 0.9, 0.9)); else if (s.piles > 0 && !s.tube) bare.push(rectLL(TX[t], z0 + LEN * s.piles / 15 / 2, 0.5, LEN * s.piles / 15)); }
-        if (bare.length) L.polygon(bare, { stroke: false, fillColor: '#6B5B45', fillOpacity: 0.8, interactive: false }).addTo(g); if (piles.length) L.polygon(piles, { stroke: false, fillColor: '#4A4F58', fillOpacity: 1, interactive: false }).addTo(g);
-        if (tubes.length) L.polygon(tubes, { stroke: false, fillColor: '#9AA0A8', fillOpacity: 1, interactive: false }).addTo(g);
-        if (mods.length) { const sh = [], m2 = [[], [], []]; for (let t = 0; t < NT; t++) { const s = EPC.trackerState(t, d); if (s.mods <= 0) continue; const h = LEN * s.mods / 81, z0 = TZ[t] - LEN / 2 + h / 2; sh.push(rectLL(TX[t] + 1.5, z0 + 0.8, W, h)); m2[(t * 7) % 3].push(rectLL(TX[t], z0, W, h)); }
-          L.polygon(sh, { stroke: false, fillColor: '#1A1408', fillOpacity: 0.38, interactive: false }).addTo(g); ['#15254F', '#1B2D5E', '#122047'].forEach((c, i) => { if (m2[i].length) L.polygon(m2[i], { color: '#C5D3EA', weight: 0.4, fillColor: c, fillOpacity: 0.97, interactive: false }).addTo(g); }); }
+      if (photo) { g.addLayer(photoLayer(d));
         if (st.status) { const by = {}; for (let t = 0; t < NT; t++) { const s = EPC.trackerState(t, d), miss = EPC.missed[t] !== undefined && d >= EPC.fact.mods.e[t] && d < 214, c = miss || s.late > 20 ? '#D23B2F' : s.late > 0 ? '#F2B705' : s.stage >= 4 ? '#1E9E5A' : s.stage > 0 ? '#3B82D6' : s.due ? '#F2B705' : null; if (c) (by[c] = by[c] || []).push(rectLL(TX[t], TZ[t], W + 2.6, LEN)); }
           Object.entries(by).forEach(([c, polys]) => L.polygon(polys, { color: c, weight: 1, fillColor: c, fillOpacity: 0.42, interactive: false }).addTo(g)); } }
       else { const by = {}; for (let t = 0; t < NT; t++) { if (st.group && ZONE[t] !== st.group) continue; const c = colorOf(t, d, EPC.trackerState(t, d)); (by[c] = by[c] || []).push(rectLL(TX[t], TZ[t], W + 2.2, LEN)); }
         Object.entries(by).forEach(([c, polys]) => L.polygon(polys, { stroke: false, fillColor: c, fillOpacity: 0.92, interactive: false }).addTo(g));
         if (st.group) { const rest = []; for (let t = 0; t < NT; t++) if (ZONE[t] !== st.group) rest.push(rectLL(TX[t], TZ[t], W + 2.2, LEN)); L.polygon(rest, { stroke: false, fillColor: '#fff', fillOpacity: 0.35, interactive: false }).addTo(g); } } }
     if (Ly.cable) SITE.inverters.forEach((v, i) => { if (d < EPC.fact.ac.e[i]) return; const k = SITE.ktp[v.k - 1]; L.polyline([ll(v.x - FENX, v.z - FENZ), ll(k.x - FENX, v.z - FENZ), ll(k.x - FENX, k.z - FENZ)], { color: '#F2B705', weight: 1.2, opacity: 0.8, interactive: false }).addTo(g); });
-    if (Ly.inv) SITE.inverters.forEach((v, i) => { const on = d >= EPC.fact.inv.e[i], pnr = d >= EPC.fact.pnr.e[i]; if (!on && !photo) return; if (!on) return; L.circleMarker(ll(v.x - FENX, v.z - FENZ), { radius: 3.5, color: '#fff', weight: 1, fillColor: pnr ? '#1E9E5A' : '#3B82D6', fillOpacity: 1 }).bindTooltip(`Inv-${v.id}: ${pnr ? 'пусконаладка пройдена' : 'смонтирован'}`, { className: 'lbl' }).addTo(g); });
-    if (Ly.ktp) SITE.ktp.forEach((k, i) => { const on = d >= EPC.fact.ktp.e[i], o = overall(d, k.id); L.polygon(rectLL(k.x - FENX, k.z - FENZ, 9, 16), { color: '#16233B', weight: 1, fillColor: on ? '#F2B705' : '#fff', fillOpacity: 0.95 }).bindTooltip(`${k.name}: ${on ? 'смонтирована' : 'не смонтирована'}`, { className: 'lbl' }).addTo(g);
+    if (Ly.inv && !photo) SITE.inverters.forEach((v, i) => { const on = d >= EPC.fact.inv.e[i], pnr = d >= EPC.fact.pnr.e[i]; if (!on && !photo) return; if (!on) return; L.circleMarker(ll(v.x - FENX, v.z - FENZ), { radius: 3.5, color: '#fff', weight: 1, fillColor: pnr ? '#1E9E5A' : '#3B82D6', fillOpacity: 1 }).bindTooltip(`Inv-${v.id}: ${pnr ? 'пусконаладка пройдена' : 'смонтирован'}`, { className: 'lbl' }).addTo(g); });
+    if (Ly.ktp && !photo) SITE.ktp.forEach((k, i) => { const on = d >= EPC.fact.ktp.e[i], o = overall(d, k.id); L.polygon(rectLL(k.x - FENX, k.z - FENZ, 9, 16), { color: '#16233B', weight: 1, fillColor: on ? '#F2B705' : '#fff', fillOpacity: 0.95 }).bindTooltip(`${k.name}: ${on ? 'смонтирована' : 'не смонтирована'}`, { className: 'lbl' }).addTo(g);
       if (!photo) L.marker(ll(k.x - FENX + (k.x < 0 ? -95 : 95), k.z - FENZ - 70), { opacity: 0, interactive: false }).bindTooltip(`Блок ${k.name} · ${fmt(o.fact)} %`, { permanent: true, direction: 'center', className: 'arealbl' }).addTo(g); });
     if (Ly.qc && g === grp) qcOpen(d).forEach(q => L.circleMarker(ll(TX[q.t], TZ[q.t]), { radius: 6, color: '#fff', weight: 2, fillColor: q.status === 'fixed' ? '#1E9E5A' : q.sev === 'bad' ? '#D23B2F' : '#F0784A', fillOpacity: 1 }).bindTooltip(`${tName(q.t)}: ${q.text}`, { className: 'lbl' }).on('click', ev => { L.DomEvent.stop(ev); st.sel = { t: q.t }; refresh(); }).addTo(g));
     if (Ly.eq && g === grp) fleet(d).forEach(f => L.circleMarker(ll(f.pos[0], f.pos[1]), { radius: 7, color: '#16233B', weight: 2, fillColor: f.work ? '#F2B705' : '#fff', fillOpacity: 1 }).bindTooltip(`${f.name}: ${f.work ? 'в работе' : 'простаивает'}, загрузка ${f.util} %`, { className: 'lbl' }).addTo(g));
@@ -309,15 +337,45 @@
     const d = st.day, ev = [[84, 89, 'Пыльная буря, ветер сильнее 15 м/с', 'Погода', 'Монтаж трекеров и модулей остановлен'], [113, 130, 'Срыв поставки модулей', 'Поставки', 'Модули на складе закончились, бригады в простое']];
     $('#main').innerHTML = `<div class="page">${head()}
       <div class="card"><h2>Реестр рисков <span class="tag demo">демо-данные</span></h2><div class="tw"><table class="t"><thead><tr><th>Риск</th><th>Область</th><th class="n">Вероятность</th><th class="n">Влияние</th><th class="n">Балл</th><th>Меры</th><th>Состояние</th></tr></thead><tbody>${RISKS.map(r => [r, r[5](d)]).sort((a, b) => (b[1] === 'сработал') - (a[1] === 'сработал') || b[0][2] * b[0][3] - a[0][2] * a[0][3]).map(([r, s]) => `<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td class="n">${r[2]} из 5</td><td class="n">${r[3]} из 5</td><td class="n"><span class="tag ${r[2] * r[3] >= 15 ? 'bad' : r[2] * r[3] >= 9 ? 'warn' : ''}">${r[2] * r[3]}</span></td><td>${r[4]}</td><td><span class="tag ${s === 'сработал' ? 'bad' : s === 'растёт' ? 'warn' : ''}">${s}</span></td></tr>`).join('')}</tbody></table></div></div>
-      <div class="card"><h2>Простои и события <small>основание для претензий и продления сроков</small></h2><table class="t"><thead><tr><th>Событие</th><th>Причина</th><th class="n">Период</th><th class="n">Дней</th><th class="n">Простой,<br>млн ₸</th><th>Подтверждение</th><th></th></tr></thead><tbody>${ev.filter(x => d >= x[0]).map(x => { const days = Math.min(d, x[1]) - x[0]; return `<tr><td><b>${x[2]}</b><small>${x[4]}</small></td><td>${x[3]}</td><td class="n">${fday(x[0])} – ${d >= x[1] ? fday(x[1]) : 'идёт'}</td><td class="n">${fmt(days)}</td><td class="n">${fmt(days * 5.2, 1)}</td><td>снимки до и после, суточные отчёты</td><td class="n"><button class="btn sm" data-ev="${x[0]}:${x[1]}">Показать на карте</button></td></tr>`; }).join('') || '<tr><td colspan="7" class="note">На эту дату простоев не было.</td></tr>'}</tbody></table><p class="note" style="margin-top:8px">«Показать на карте» открывает сравнение дат: состояние площадки до события и после него.</p></div></div>`;
+      <div class="card"><h2>Простои и события <small>основание для претензий и продления сроков</small></h2><table class="t"><thead><tr><th>Событие</th><th>Причина</th><th class="n">Период</th><th class="n">Дней</th><th class="n">Простой,<br>млн ₸</th><th>Подтверждение</th><th></th></tr></thead><tbody>${ev.filter(x => d >= x[0]).map(x => { const days = Math.min(d, x[1]) - x[0]; return `<tr><td><b>${x[2]}</b><small>${x[4]}</small></td><td>${x[3]}</td><td class="n">${fday(x[0])} – ${d >= x[1] ? fday(x[1]) : 'идёт'}</td><td class="n">${fmt(days)}</td><td class="n">${fmt(days * 5.2, 1)}</td><td>снимки до и после, суточные отчёты</td><td class="n"><button class="btn sm" data-ev="${x[0]}:${x[1]}">Показать на карте</button></td></tr>`; }).join('') || '<tr><td colspan="7" class="note">На эту дату простоев не было.</td></tr>'}</tbody></table><p class="note" style="margin-top:8px">«Показать на карте» открывает аэросъёмку: снимки до события и после него со шторкой.</p></div></div>`;
   }
-  const NAV = { sum: { t: 'Сводка', fn: vSum }, map: { t: 'Карта', fn: vMap }, sched: { t: 'График', fn: vRep, subs: ['gantt', 'curve', 'pace', 'look'] }, evm: { t: 'Освоение и деньги', fn: vEvm }, supply: { t: 'Поставки', fn: vSupply }, qc: { t: 'Качество', fn: vRec, subs: ['qc', 'insp'] }, res: { t: 'Ресурсы', fn: vRec, subs: ['man', 'eq'] }, risk: { t: 'Риски и события', fn: vRisk }, rep: { t: 'Отчёты', fn: vRep, subs: ['daily', 'energy'] }, log: { t: 'Портфель и журнал', fn: vRec, subs: ['port', 'log'] } };
+
+  /* ───────── аэросъёмка: два облёта и шторка «было — стало» ───────── */
+  let aerA = null, aerB = null, aerLA = null, aerLB = null, aerSt = null;
+  const FLIGHTS = Array.from({ length: Math.floor(EPC.MAXD / 7) + 1 }, (_, i) => i * 7);
+  function vAerial() {
+    const A = st.aer || (st.aer = { before: 70, after: 133, x: 50, status: false });
+    $('#main').innerHTML = `<div class="cwrap"><div class="cmap aer" id="aer"><div id="aerR" style="position:absolute;inset:0"></div><div id="aerLwrap" style="position:absolute;inset:0;z-index:500;clip-path:inset(0 ${100 - A.x}% 0 0)"><div id="aerL" style="position:absolute;inset:0"></div></div>
+        <div class="cap2" style="position:absolute;left:10px;bottom:26px;z-index:700;max-width:47%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(22,35,59,.92);color:#fff;border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:500" id="aer-capL"></div><div class="cap2" style="position:absolute;right:10px;bottom:26px;z-index:700;max-width:47%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(22,35,59,.92);color:#fff;border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:500" id="aer-capR"></div>
+        <div id="aer-div" style="position:absolute;top:0;bottom:0;left:${A.x}%;width:0;z-index:750;touch-action:none"><div style="position:absolute;top:0;bottom:0;left:-1.5px;width:3px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.6)"></div><button id="aer-knob" aria-label="Шторка: было и стало" style="position:absolute;top:50%;left:-22px;width:44px;height:44px;margin-top:-22px;border-radius:50%;border:3px solid #fff;background:#0B6FC1;color:#fff;font-size:16px;cursor:ew-resize;box-shadow:0 4px 14px rgba(0,0,0,.45);touch-action:none">⇔</button></div></div>
+      <div class="over" style="left:10px;top:10px;right:10px;padding:10px 12px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;overflow:visible" id="aer-bar"></div></div>`;
+    if (!window.L) return; const mk = id => { const m = L.map(id, { zoomControl: false, preferCanvas: true, zoomSnap: 0.25, doubleClickZoom: false, attributionControl: id === 'aerR' }); if (id === 'aerR') m.attributionControl.setPrefix(false); U.setBase(m, 'sat'); (m._vieLayers || []).slice(1).forEach(l => m.removeLayer(l)); return m; };
+    aerA = mk('aerR'); aerB = mk('aerL'); map = aerA; mapB = aerB; aerLA = L.layerGroup().addTo(aerA); aerLB = L.layerGroup().addTo(aerB); aerSt = L.layerGroup().addTo(aerA);
+    const b = L.latLngBounds(P.boundary.map(q => ll(q[0], q[1]))); aerA.invalidateSize(); aerB.invalidateSize(); aerA.fitBounds(b, { paddingTopLeft: [10, innerWidth > 860 ? 150 : 10], paddingBottomRight: [10, 10], animate: false }); aerB.setView(aerA.getCenter(), aerA.getZoom(), { animate: false });
+    let lock = false; const sync = (a, c) => a.on('move', () => { if (lock) return; lock = true; c.setView(a.getCenter(), a.getZoom(), { animate: false }); lock = false; }); sync(aerA, aerB); sync(aerB, aerA);
+    const knob = $('#aer-knob'), box = $('#aer'), move = ev => { const r = box.getBoundingClientRect(); A.x = Math.max(3, Math.min(97, (ev.clientX - r.left) / r.width * 100)); $('#aer-div').style.left = A.x + '%'; $('#aerLwrap').style.clipPath = `inset(0 ${100 - A.x}% 0 0)`; };
+    knob.addEventListener('pointerdown', ev => { knob.setPointerCapture(ev.pointerId); const up = () => { knob.removeEventListener('pointermove', move); knob.removeEventListener('pointerup', up); }; knob.addEventListener('pointermove', move); knob.addEventListener('pointerup', up); ev.preventDefault(); });
+    knob.addEventListener('keydown', ev => { if (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight') { A.x = Math.max(3, Math.min(97, A.x + (ev.key === 'ArrowLeft' ? -3 : 3))); $('#aer-div').style.left = A.x + '%'; $('#aerLwrap').style.clipPath = `inset(0 ${100 - A.x}% 0 0)`; } });
+    aerRefresh();
+  }
+  function aerRefresh() {
+    const A = st.aer, oB = overall(A.before, 0), oA = overall(A.after, 0), mB = EPC.metrics(A.before), mA = EPC.metrics(A.after), fl = v => FLIGHTS.map(f => `<option value="${f}" ${f === v ? 'selected' : ''}>${fdate(f)}</option>`).join('');
+    aerLA.clearLayers(); aerLB.clearLayers(); aerSt.clearLayers(); aerLB.addLayer(photoLayer(A.before)); aerLA.addLayer(photoLayer(A.after));
+    if (A.status) { const by = {}; for (let t = 0; t < NT; t++) { const s = EPC.trackerState(t, A.after), s0 = EPC.trackerState(t, A.before), miss = EPC.missed[t] !== undefined && A.after >= EPC.fact.mods.e[t] && A.after < 214, c = miss || s.late > 20 ? '#D23B2F' : s.late > 0 ? '#F2B705' : s.stage > s0.stage ? '#1E9E5A' : null; if (c) (by[c] = by[c] || []).push(rectLL(TX[t], TZ[t], W + 2.6, LEN)); } Object.entries(by).forEach(([c, polys]) => L.polygon(polys, { color: c, weight: 1, fillColor: c, fillOpacity: 0.4, interactive: false }).addTo(aerSt)); }
+    const sd = d => innerWidth > 860 ? fdate(d) : fdate(d).replace(/ \d{4}$/, ''); $('#aer-capL').textContent = `Было: ${sd(A.before)} · ${fmt(oB.fact, 1)} %`; $('#aer-capR').textContent = `Стало: ${sd(A.after)} · ${fmt(oA.fact, 1)} %`;
+    $('#aer-bar').innerHTML = `<div style="margin-right:auto"><b style="font:500 15px var(--display)">Аэросъёмка: было и стало</b><div class="note">Тяните шторку по снимку. За период: модулей +${fmt(mA.inst - mB.inst)}, столов с модулями +${fmt(SITE.trackers.filter((t, i) => EPC.trackerState(i, A.after).mods > 0).length - SITE.trackers.filter((t, i) => EPC.trackerState(i, A.before).mods > 0).length)}, готовность +${fmt(oA.fact - oB.fact, 1)} %</div></div>
+      <label class="f" style="min-width:150px">Было, облёт<select id="aer-b">${fl(A.before)}</select></label><label class="f" style="min-width:150px">Стало, облёт<select id="aer-a">${fl(A.after)}</select></label>
+      <div class="acts"><button class="btn sm" data-aer="35:84">Начало монтажа</button><button class="btn sm" data-aer="84:91">Буря</button><button class="btn sm" data-aer="112:133">Срыв поставки</button><button class="btn sm" data-aer="133:210">Наверстали</button><button class="btn sm ${A.status ? 'on' : ''}" data-act="aer-status">Статус поверх</button></div>
+      <span class="tag demo" title="Снимки построены по состоянию цифровой модели на дату облёта поверх настоящего спутникового снимка участка">снимки сгенерированы</span>`;
+  }
+  const NAV = { sum: { t: 'Сводка', fn: vSum }, map: { t: 'Карта', fn: vMap }, aer: { t: 'Аэросъёмка', fn: vAerial }, sched: { t: 'График', fn: vRep, subs: ['gantt', 'curve', 'pace', 'look'] }, evm: { t: 'Освоение и деньги', fn: vEvm }, supply: { t: 'Поставки', fn: vSupply }, qc: { t: 'Качество', fn: vRec, subs: ['qc', 'insp'] }, res: { t: 'Ресурсы', fn: vRec, subs: ['man', 'eq'] }, risk: { t: 'Риски и события', fn: vRisk }, rep: { t: 'Отчёты', fn: vRep, subs: ['daily', 'energy'] }, log: { t: 'Портфель и журнал', fn: vRec, subs: ['port', 'log'] } };
 
   /* ───────── события ───────── */
   document.addEventListener('click', ev => {
     const q = s => ev.target.closest(s); let b;
     if ((b = q('[data-tab]'))) { ev.preventDefault(); st.tab = b.dataset.tab; clearInterval(timer); st.play = false; return render(); }
-    if ((b = q('[data-ev]'))) { const [a, c] = b.dataset.ev.split(':').map(Number); st.tab = 'map'; st.compare = true; st.dayB = Math.max(0, a - 1); st.day = Math.min(EPC.MAXD, Math.max(st.day, c)); st.mode = 'photo'; return render(); }
+    if ((b = q('[data-aer]'))) { const [x, y] = b.dataset.aer.split(':').map(Number); st.aer.before = x; st.aer.after = y; return aerRefresh(); }
+    if ((b = q('[data-ev]'))) { const [a, c] = b.dataset.ev.split(':').map(Number); st.tab = 'aer'; st.aer = Object.assign(st.aer || { x: 50, status: false }, { before: Math.floor((a - 1) / 7) * 7, after: Math.ceil(c / 7) * 7 }); return render(); }
     if ((b = q('[data-rep]'))) { st.rep = b.dataset.rep; return vRep(); }
     if ((b = q('[data-rec]'))) { st.rec = b.dataset.rec; return vRec(); }
     if ((b = q('[data-qf]'))) { st.qf = b.dataset.qf; return vRec(); }
@@ -330,6 +388,7 @@
     else if (a === 'compare') { st.compare = !st.compare; st.dayB = Math.max(0, st.day - 42); render(); }
     else if (a === 'agent') { st.agent = !st.agent; render(); }
     else if (a === 'unsel') { st.sel = null; refresh(); }
+    else if (a === 'aer-status') { st.aer.status = !st.aer.status; aerRefresh(); }
     else if (a === 'photo') { st.mode = st.mode === 'photo' ? 'stage' : 'photo'; if (st.mode !== 'photo') st.status = false; bot(); refresh(); }
     else if (a === 'status') { st.status = !st.status; if (st.status) st.mode = 'photo'; bot(); refresh(); }
     else if (a === 'nq') { const text = $('#nq-text').value.trim(); if (!text) return toast('Опишите замечание'); const n = 100 + DB.qc.user.length + 1, rec = { id: 'u' + n, n, t: st.sel.t, type: $('#nq-type').value, text, sev: $('#nq-bad').checked ? 'bad' : 'warn', found: st.day, due: st.day + 14, status: 'assigned', who: $('#nq-who').value, closed: 9999 }; DB.qc.user.push(rec); DB.qc.log.unshift({ t: S.now(), text: `Создано замечание ${n} · ${tName(rec.t)}: ${text}. Назначено: ${rec.who}` }); S.persist(); toast('Замечание добавлено и назначено'); refresh(); }
@@ -342,6 +401,7 @@
     else if (t.id === 'r-day') { st.day = +t.value; NAV[st.tab].fn(); const r = $('#r-day'); if (r) r.focus(); }
     else if (t.dataset.ly) { st.layers[t.dataset.ly] = t.checked; draw(map, grp, st.day); if (mapB) draw(mapB, grpB, st.dayB); } });
   document.addEventListener('change', ev => { const t = ev.target;
+    if (t.id === 'aer-b' || t.id === 'aer-a') { st.aer[t.id === 'aer-b' ? 'before' : 'after'] = +t.value; if (st.aer.before > st.aer.after) { const k = st.aer.before; st.aer.before = st.aer.after; st.aer.after = k; } return aerRefresh(); }
     if (t.id === 'c-mode') { st.mode = t.value; refresh(); } else if (t.id === 'c-group') { st.group = +t.value; refresh(); } else if (t.id === 'c-src') { st.src = t.value; left(); }
     else if (t.id === 'c-base') { st.base = t.value; U.setBase(map, st.base); if (mapB) U.setBase(mapB, st.base); } else if (t.id === 'q-mine') { st.mine = t.checked; vRec(); } else if (t.id === 'p6') { /* обработчик задаётся на экране */ } });
   document.addEventListener('submit', ev => { if (ev.target.id === 'ag-form') { ev.preventDefault(); const v = $('#ag-in').value.trim(); if (v) ask(v); } });
