@@ -90,8 +90,7 @@
   function render() {
     U.top('build');
     $('#nav').innerHTML = `<h4>Строительство</h4>${Object.entries(NAV).map(([k, v]) => `<a href="#${k}" class="${st.tab === k ? 'on' : ''}" data-tab="${k}">${v.t}</a>`).join('')}
-      <h4>Проект</h4><a href="design.html#/project/aral">${esc(P.name)}</a><a href="index.html#build">3D-вид стройки</a>
-      <div class="foot">План — по ПОС и смете проекта. Фактический ход работ, замечания, поставки и техника — демо-сценарий.</div>`;
+      <h4>Проект</h4><a href="design.html#/project/aral">${esc(P.name)}</a><a href="index.html#build">3D-вид стройки</a>`;
     if (map) { map.remove(); map = null; } if (mapB) { mapB.remove(); mapB = null; }
     const n = NAV[st.tab] || NAV.sum; if (n.subs) { if (n.fn === vRep && !n.subs.includes(st.rep)) st.rep = n.subs[0]; if (n.fn === vRec && !n.subs.includes(st.rec)) st.rec = n.subs[0]; } n.fn();
   }

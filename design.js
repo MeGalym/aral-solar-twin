@@ -16,7 +16,7 @@
     const p = R.pid && S.proj(R.pid), a = (h, t, cls = '') => `<a href="#${h}" class="${cls} ${location.hash === '#' + h ? 'on' : ''}">${t}</a>`, rec = (DB().recent || []).map(r => { const pp = S.proj(r.pid), pr = S.pred(pp, r.prid); return pr ? a(`/pred/${r.pid}/${r.prid}`, esc(pr.name), 'sub') : ''; }).join('');
     $('#nav').innerHTML = `<h4>Работа</h4>${a('/projects', 'Проекты')}${p ? a('/project/' + p.id, esc(p.name), 'sub') + a('/scen/' + p.id, 'Сценарии', 'sub') : ''}
       <h4>Библиотеки</h4>${a('/lib/weather', 'Погода')}${a('/lib/inverters', 'Инверторы')}${a('/lib/modules', 'Модули')}${rec ? '<h4>Недавние расчёты</h4>' + rec : ''}
-      <h4>Журнал</h4>${a('/log', 'Журнал расчётов')}<div class="foot">Расчёт — почасовой, 8760 часов, по иерархии блок → массив → инвертор → DC-поле.<br><a href="#/reset" style="display:inline;padding:0;color:inherit;text-decoration:underline">Вернуть исходные данные</a></div>`;
+      <h4>Журнал</h4>${a('/log', 'Журнал расчётов')}<div class="foot"><a href="#/reset" style="display:inline;padding:0;color:inherit;text-decoration:underline">Вернуть исходные данные</a></div>`;
   }
   function route() {
     if (map) { map.remove(); map = null; } ui.pop = null; ui.draw = null;
@@ -207,7 +207,7 @@
       <h2>Итоги года</h2><table><tr><td>Отпуск в сеть, P50</td><td>${fmt(r.energy / 1000, 2)} ГВт·ч</td></tr><tr><td>P90</td><td>${fmt(c.pv.p[90] / 1000, 2)} ГВт·ч</td></tr><tr><td>Удельная выработка</td><td>${fmt(r.spec)} кВт·ч/кВт</td></tr><tr><td>PR</td><td>${fmt(r.pr, 1)} %</td></tr><tr><td>КИУМ</td><td>${fmt(r.cf, 1)} %</td></tr><tr><td>Приход на горизонталь / в плоскости модулей</td><td>${fmt(r.ghi)} / ${fmt(r.poa)} кВт·ч/м²</td></tr></table>
       <h2>Станция</h2><table><tr><td>Мощность DC / AC</td><td>${fmt(c.dcKw / 1000, 2)} / ${fmt(c.acKw / 1000, 2)} МВт, DC/AC ${fmt(c.cap.ratio, 2)}</td></tr><tr><td>Модулей, инверторов</td><td>${fmt(c.cap.mods)} / ${fmt(c.cap.inv)}</td></tr><tr><td>Погода</td><td>${esc(r.weather.name)}</td></tr><tr><td>Стоимость без НДС, LCOE</td><td>${fmt(c.cost.net / 1e6, 2)} млрд ₸, ${fmt(c.cost.lcoe, 1)} ₸/кВт·ч</td></tr></table>
       <h2>Выработка по месяцам, МВт·ч</h2><table><tr>${E.MON.map(m => `<th style="text-align:right">${m}</th>`).join('')}</tr><tr>${r.months.map(v => `<td style="text-align:right">${fmt(v)}</td>`).join('')}</tr></table>
-      <h2>Дерево потерь</h2><table>${r.tree.map(t => t[0] === 'g' ? `<tr><th colspan="2">${t[1]}</th></tr>` : `<tr><td>${t[1] == null ? '<b>' + t[0] + '</b>' : t[0]}</td><td>${t[1] == null ? '<b>' + fmt(t[2], 1) + ' ' + t[3] + '</b>' : sg(t[1], 2) + ' %'}</td></tr>`).join('')}</table><p>Платформа ВИЭ. Почасовой расчёт, 8760 часов.</p>`); w.document.close(); setTimeout(() => w.print(), 300); }
+      <h2>Дерево потерь</h2><table>${r.tree.map(t => t[0] === 'g' ? `<tr><th colspan="2">${t[1]}</th></tr>` : `<tr><td>${t[1] == null ? '<b>' + t[0] + '</b>' : t[0]}</td><td>${t[1] == null ? '<b>' + fmt(t[2], 1) + ' ' + t[3] + '</b>' : sg(t[1], 2) + ' %'}</td></tr>`).join('')}</table><p>Construct. Почасовой расчёт, 8760 часов.</p>`); w.document.close(); setTimeout(() => w.print(), 300); }
 
   /* ───────── сценарии ───────── */
   function scenOf(p) { return DB().scen[p.id] || (DB().scen[p.id] = { base: (p.preds[0] || {}).id, ac: 26.24, rows: [{ id: S.uid(), ratio: 1.14, gcr: 33 }, { id: S.uid(), ratio: 1.2, gcr: 33 }, { id: S.uid(), ratio: 1.25, gcr: 36 }, { id: S.uid(), ratio: 1.3, gcr: 38 }, { id: S.uid(), ratio: 1.35, gcr: 40 }], ran: false }); }

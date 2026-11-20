@@ -6,7 +6,7 @@
   const STAGES = [['design', 'Проектирование', 'design.html'], ['build', 'Строительство', 'construct.html'], ['ops', 'Эксплуатация', 'index.html#ops'], ['cost', 'Смета', 'index.html#cost']];
   function top(cur) {
     const a = S.activeCalc(), el = document.getElementById('top'); if (!el) return;
-    el.innerHTML = `<a class="brand glass" href="design.html#/projects"><div class="brand-mark">${SUN}</div><div><b>Платформа ВИЭ</b><span>${a ? esc(a.p.name) : 'Проекты'}</span></div></a>
+    el.innerHTML = `<a class="brand glass" href="design.html#/projects"><div class="brand-mark">${SUN}</div><div><b>Construct</b><span>${a ? esc(a.p.name) : 'Проекты'}</span></div></a>
       <nav class="tabs glass" aria-label="Этап">${STAGES.map(s => `<a href="${s[2]}" class="${s[0] === cur ? 'on' : ''}">${s[1]}</a>`).join('')}</nav>
       ${a ? `<div class="chip glass"><span>Расчёт:</span><b>${esc(a.pr.name)}</b><span>${a.c.res ? fmt(a.c.res.energy / 1000, 1) + ' ГВт·ч' : ''}</span></div>` : ''}`;
   }
