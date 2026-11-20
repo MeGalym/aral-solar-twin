@@ -79,14 +79,14 @@
   let iamDiff = 0; for (let d = 0.5; d < 90; d += 1) iamDiff += iam(d) * Math.sin(2 * d * RAD) * RAD;   // IAM для рассеянного света: интеграл по полусфере
 
   /* ───────── облучённость плоскости стола и мощность модуля ───────── */
-  function plane(sun, dni, dhi, a, tamb, doy) {
+  function plane(sun, dni, dhi, a, tamb, doy, bs = 0) {   // bs — доля стола в тени соседнего ряда по прямому свету (только для столов без обратного хода)
     const ca = Math.cos(a), cosT = Math.max(0, sun.x * Math.sin(a) + sun.y * ca), ghi = dni * Math.max(0, sun.y) + dhi;
     const i0n = 1367 * (1 + 0.033 * Math.cos(2 * Math.PI * doy / 365)), ai = Math.min(1, dni / i0n), rb = cosT / Math.max(sun.y, 0.05);
     const beam = dni * cosT, circ = dhi * ai * rb, iso = dhi * (1 - ai) * (1 + ca) / 2, alb = C.albedoFront * ghi * (1 - ca) / 2;
     const inc = beam + circ + iso + alb;
     const b = Math.abs(a), psi = Math.atan2(Math.sin(b), 1 / C.gcr - Math.cos(b)), kd = (1 - Math.cos(psi)) / (1 + ca);   // доля неба, закрытая соседним рядом
-    const isoS = iso * (1 - kd), albS = alb * (1 - Math.min(1, C.gcr * 2.2)), shaded = beam + circ + isoS + albS;
-    const thetaDeg = Math.acos(Math.min(1, cosT)) * DEG, front = (beam + circ) * iam(thetaDeg) + (isoS + albS) * iamDiff;
+    const lit = 1 - bs, isoS = iso * (1 - kd), albS = alb * (1 - Math.min(1, C.gcr * 2.2)), shaded = (beam + circ) * lit + isoS + albS;
+    const thetaDeg = Math.acos(Math.min(1, cosT)) * DEG, front = (beam + circ) * lit * iam(thetaDeg) + (isoS + albS) * iamDiff;
     // тыльная сторона: отражение от земли и рассеянный свет неба
     const tp = Math.atan2(sun.x, Math.max(sun.y, 1e-3)), fShadow = Math.min(1, C.gcr * Math.abs(Math.cos(a - tp)) / Math.max(Math.cos(tp), 0.05));
     const skyG = 1 - 0.63 * C.gcr * ca, ground = dni * Math.max(0, sun.y) * (1 - fShadow) + dhi * skyG;
@@ -117,20 +117,31 @@
   const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31], NPAN = M.modules, NI = M.inverters, KVA = SITE.ktp.reduce((s, k) => s + k.kva, 0);
   const LAMBDA = (typeof process !== 'undefined' && process.env.LAM) ? +process.env.LAM : 0.3;   // доля прямой радиации, приходящая в полностью ясные дни
   let YEAR = null;
-  function year() {
-    if (YEAR) return YEAR;
+  const year = () => YEAR || (YEAR = yearCalc());
+  /* Год для произвольной компоновки и погоды: o.pitch и o.width — шаг рядов и ширина стола, o.npan, o.ni, o.kva — состав станции,
+     o.fixed и o.tilt — неподвижные столы с наклоном на юг, o.ghi, o.dhi, o.tamb — месячные ряды другого источника погоды. */
+  function yearCalc(o) {
+    o = Object.assign({ pitch: M.pitch, width: 2.384, npan: M.modules, ni: M.inverters, kva: KVA, fixed: false, tilt: 0, ghi: C.month.ghi, dhi: C.month.dhi, tamb: C.month.tamb }, o || {});
+    const keep = [C.pitch, C.gcr], NPAN = o.npan, NI = o.ni, KVA_ = o.kva, MO = o; C.gcr = o.width / o.pitch; C.pitch = C.width / C.gcr;
+    try { return yearRun(NPAN, NI, KVA_, MO); } finally { C.pitch = keep[0]; C.gcr = keep[1]; }
+  }
+  function yearRun(NPAN, NI, KVA, MO) {
     const A = { ghi: 0, inc: 0, shaded: 0, front: 0, rear: 0, eff: 0, ground: 0, stc: 0, irr: 0, temp: 0, qual: 0, rearMis: 0, mis: 0, ohm: 0, inv: 0, clip: 0, acOhm: 0, tr: 0, mv: 0, grid: 0 }, months = [];
     for (let m = 0; m < 12; m++) {
       const doy = Math.round(15 + m * 30.4), steps = []; let bh = 0, dh = 0;
       for (let t = 0; t < 1440; t += 10) { const sun = sunAt(t, doy), cs = clearSky(sun); steps.push([t, sun, cs]); bh += cs.dni * Math.max(0, sun.y) / 6000; dh += cs.dhi / 6000; }
       // месяц = ясные дни + пасмурные дни: доля ясных задаёт прямую радиацию, пасмурные добирают рассеянную до суммы отчёта
-      const fBeam = Math.min(0.97, (C.month.ghi[m] - C.month.dhi[m]) / DAYS[m] / bh), fClear = fBeam * LAMBDA, kHazy = fBeam * (1 - LAMBDA) / (1 - fClear), dOver = Math.max(0, (C.month.dhi[m] / DAYS[m] - fClear * dh) / (1 - fClear)) / dh;
+      const fBeam = Math.min(0.97, (MO.ghi[m] - MO.dhi[m]) / DAYS[m] / bh), fClear = fBeam * LAMBDA, kHazy = fBeam * (1 - LAMBDA) / (1 - fClear), dOver = Math.max(0, (MO.dhi[m] / DAYS[m] - fClear * dh) / (1 - fClear)) / dh;
       const mo = { ghi: 0, inc: 0, grid: 0, array: 0 };
       for (const [f, kb, kdif, amp, dT] of [[fClear, 1, 1, 7, 1.5], [1 - fClear, kHazy, dOver, 5, -1.5 * fClear / (1 - fClear)]]) {
         const w = DAYS[m] * f / 6;
         for (const [t, sun, cs] of steps) {
           if (sun.y <= 0.01) continue;
-          const a = trackAngle(sun), tamb = C.month.tamb[m] + dT + amp * Math.cos(2 * Math.PI * (t / 60 - 15) / 24), P = plane(sun, cs.dni * kb, cs.dhi * kdif, a, tamb, doy);
+          const tamb = MO.tamb[m] + dT + amp * Math.cos(2 * Math.PI * (t / 60 - 15) / 24); let P;
+          if (MO.fixed) {               // неподвижный стол лицом на юг: та же двумерная модель, ось рядов — восток-запад
+            const s2 = { x: sun.z, y: sun.y, el: sun.el }, a = MO.tilt * RAD, tp = Math.atan2(s2.x, s2.y), sh = C.gcr * Math.max(0, Math.cos(a - tp)) / Math.max(Math.cos(tp), 0.02);
+            P = plane(s2, cs.dni * kb, cs.dhi * kdif, a, tamb, doy, sh > 1 ? Math.min(1, 1.5 * (1 - 1 / sh)) : 0);   // тень на нижних ячейках режет стринг сильнее, чем по площади
+          } else P = plane(sun, cs.dni * kb, cs.dhi * kdif, trackAngle(sun), tamb, doy);
           if (P.eff < 1) continue;
           const dc = NPAN * P.p / 1000 * (1 - stringLoss), I = inverter(dc / NI, NPAN / NI, M.inverterKw), G = toGrid(I.ac * NI, NPAN, KVA);
           A.ghi += P.ghi * w / 1000; A.inc += P.inc * w / 1000; A.shaded += P.shaded * w / 1000; A.front += P.front * w / 1000; A.rear += P.rear * w / 1000; A.eff += P.eff * w / 1000; A.ground += P.ground * w / 1000;
@@ -151,8 +162,8 @@
       ['Кабели постоянного тока', pc(A.ohm, A.mis), R.ohmic], ['КПД инверторов', pc(A.inv, A.ohm), R.inv], ['Срез по мощности инвертора', pc(A.clip, A.inv), R.clip],
       ['Кабели 0,8 кВ', pc(A.acOhm, A.clip), R.acOhmic], ['Трансформаторы', pc(A.tr, A.acOhm), R.transfo], ['Линия 35 кВ', pc(A.grid, A.tr), R.mvLine],
     ];
-    return YEAR = { months: months.map(m => m.grid), monthInc: months.map(m => m.inc), total: A.grid, inc: A.inc, ghi: A.ghi, pr: A.grid * 1000 / (M.dcKw * A.inc) * 100, diagram, acc: A };
+    return { months: months.map(m => m.grid), monthInc: months.map(m => m.inc), monthGhi: months.map(m => m.ghi), total: A.grid, inc: A.inc, ghi: A.ghi, pr: A.grid * 1000 / (NPAN * D.pnom / 1000 * A.inc) * 100, clip: A.inv > 0 ? (1 - A.clip / A.inv) * 100 : 0, shade: (1 - A.shaded / A.inc) * 100, diagram, acc: A };
   }
 
-  window.PV = { C, MOD, mpp, sunAt, trackAngle, clearSky, iam, iamDiff, plane, inverter, toGrid, invEff, stringLoss, year };
+  window.PV = { C, MOD, mpp, sunAt, trackAngle, clearSky, iam, iamDiff, plane, inverter, toGrid, invEff, stringLoss, year, yearCalc };
 })();
