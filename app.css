@@ -190,3 +190,4 @@ table.t{width:100%;border-collapse:collapse;font-size:12.5px}
 
 .cvpop .leaflet-popup-content-wrapper,.cvpop .leaflet-popup-tip{background:rgba(20,26,39,.96);color:var(--text);border:1px solid var(--line)}.cvpop .leaflet-popup-content{font:12.5px/1.5 var(--body);margin:10px 14px}
 @media (max-width:860px){.cv-grid{grid-template-columns:minmax(0,1fr)!important}}
+@media (max-width:860px){#aer-card,#aer-leg{position:static!important;width:auto!important;max-width:none!important;max-height:none!important;margin-top:10px;flex:none}#aer-tip{display:none!important}}
